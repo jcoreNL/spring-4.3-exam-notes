@@ -211,7 +211,7 @@ public class SystemArchitecture {
 }
 ```
 ```java
-@Before("com.xyz.myapp.SystemArchitecture.setterMethods()")
+@Before("com.xyz.someapp.SystemArchitecture.setterMethods()")
   public void doAccessCheck() {
     // ...
   }
