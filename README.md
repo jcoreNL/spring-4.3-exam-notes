@@ -200,13 +200,21 @@ are DRY.
     </aop:aspect>
 </aop:config> 
 ```
-
+**Java example:**
 ```java
+package com.xyz.someapp;
+
 @Aspect
 public class SystemArchitecture {
     @Pointcut("execution(void set*(*))")
     public void setterMethods() {} 
 }
+```
+```java
+@Before("com.xyz.myapp.SystemArchitecture.setterMethods()")
+  public void doAccessCheck() {
+    // ...
+  }
 ```
 
 ### How do you externalize pointcuts? What is the advantage of doing this?
@@ -216,8 +224,14 @@ public class SystemArchitecture {
 ### What is a ProceedingJoinPoint?
 
 ### What are the five advice types called?
+- **before**: Run advice before the method execution. 	
+- **after**: Run advice after the method execution, regardless of its outcome.
+- **after**-returning: Run advice after the method execution, only if the method completes successfully.	
+- **after-throwing**: Run advice after the method execution, only if the method exits by throwing an exception.
+- **around**: Run advice before and after the advised method is invoked.
 
 ### Which advice do you have to use if you would like to try and catch exceptions?
+after-throwing
 
 ### What is the difference between `@EnableAspectJAutoProxy` and `<aop:aspectj-autoproxy>`?
 
