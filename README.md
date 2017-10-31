@@ -1,5 +1,7 @@
 # Spring 4.3 Certification Exam Study Notes 
 
+Remember: Unless a question explicitly references Spring Boot you can assume Spring Boot is not involved in any question.
+
 ## Container, Dependency, and IOC
 
 ### What is dependency injection and what are the advantages?
