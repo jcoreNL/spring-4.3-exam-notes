@@ -65,12 +65,16 @@ A method annotated with `@PreDestroy` will be called just before the bean lifecy
 ### How are you going to create an ApplicationContext in an integration test or a JUnit test?
 
 ### What do you have to do, if you would like to inject something into a private field?
+Spring injects fields annotated with `@Autowired` through reflection. This also works for private fields so no extra 
+effort is needed. Additionally constructor and setter injection also work for setting private fields.
 
 ### What are the advantages of JavaConfig? What are the limitations?
 
 ### What is the default bean id if you only use `@Bean`?
+The name of the method annotated with `@Bean` wil be used as the default id of the bean.
 
 ### Can you use `@Bean` together with `@Profile`?
+Yes, the `@Profile` annotation can be used on method level to include/exclude a bean based on the active profile.
 
 ### What is Spring Expression Language (SpEL for short)?
 
@@ -81,15 +85,23 @@ A method annotated with `@PreDestroy` will be called just before the bean lifecy
 ### How do you configure a profile. What are possible use cases where they might be useful?
 
 ### How many profiles can you have?
+There is no limit to the amount of profiles you can define and use in a Spring application.
 
 ### How do you enable JSR-250 annotations like `@PostConstruct`?
 JSR-250 annotations can be enabled using `<context:annotation-config/>` in xml configuration or using the annotation `@AnnotationDrivenConfig` 
 
 ### Why are you not allowed to annotate a final class with `@Configuration`
+Spring creates a CGLIB proxy for each configuration class. CGLIB proxies work through inheritance which is not possible 
+with final classes.
 
 ### Why must you have a default constructor in your `@Configuration` annotated class?
+Prior to Spring 4, CGLIB-based proxy classes require a default constructor. And this is not the limitation of CGLIB 
+library, but Spring itself. Fortunately, as of Spring 4 this is no longer an issue. CGLIB-based proxy classes no longer 
+require a default constructor.
 
 ### Why are you not allowed to annotate final methods with `@Bean`?
+Spring creates a CGLIB proxy for each configuration class. CGLIB proxies work through inheritance which is not possible 
+with final methods.
 
 ### What is the preferred way to close an application context?
 
