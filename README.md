@@ -110,6 +110,9 @@ with final methods.
 ### How can you create a shared application context in a JUnit test?
 
 ### What does a static `@Bean` method do?
+`@Bean` annotated methods are proxied using CGLIB through inheritance. Static methods cannot be overridden which means 
+they cannot be proxied. This way the static method annotated with `@Bean` will generate a new instance of the bean on each 
+call which is not the expected singleton behavior.
 
 ### What is a ProperySourcesPlaceholderConfigurer used for?
 
@@ -124,6 +127,9 @@ with final methods.
 ## Aspect oriented programming
 
 ### What is the concept of AOP? Which problem does it solve?
+Aspect Oriented Programming solves the problem of crosscutting concerns, which are concerns that are mostly scattered 
+throughout an application because the same concept applies to many parts of the code. With AOP these concerns can be 
+centralized which decreases clutter and code scattering.
 
 ### What is a pointcut, a join point, an advice, an aspect, weaving?
 - Pointcut: a predicate that matches join points. Advice is associated with a pointcut expression and runs at any join 
@@ -157,6 +163,11 @@ frameworks, performs weaving at runtime.
     - The constructor of your proxied object will be called twice. This is a natural consequence of the CGLIB proxy model whereby a subclass is generated for each proxied object. For each proxied instance, two objects are created: the actual proxied object and an instance of the subclass that implements the advice. This behavior is not exhibited when using JDK proxies. Usually, calling the constructor of the proxied type twice, is not an issue, as there are usually only assignments taking place and no real logic is implemented in the constructor.
 
 ### How many advice types does Spring support. What are they used for?
+- **before**: Run advice before the method execution. 	
+- **after**: Run advice after the method execution, regardless of its outcome.
+- **after**-returning: Run advice after the method execution, only if the method completes successfully.	
+- **after-throwing**: Run advice after the method execution, only if the method exits by throwing an exception.
+- **around**: Run advice before and after the advised method is invoked.
 
 ### What do you have to do to enable the detection of the `@Aspect` annotation?
 
@@ -167,10 +178,36 @@ frameworks, performs weaving at runtime.
 - Caching
 
 ### What two problems arise if you don't solve a cross cutting concern via AOP?
+- **Code clutter**: Code for the crosscutting concerns clutters each method where that logic is needed.
+- **Code scattering**: Code for the crosscutting concerns is scattered over many methods. When a change has to be made 
+to the logic, it might have to be changed over many methods.
 
 ### What does `@EnableAspectJAutoProxy` do?
+Enables support for handling components marked with AspectJ's `@Aspect` annotation, similar to functionality found in 
+Spring's `<aop:aspectj-autoproxy>` XML element. To be used on @Configuration classes.
 
 ### What is a named pointcut?
+A named pointcut can be referenced at multiple locations to prevent repeating the same pointcut logic. Named pointcuts 
+are DRY. 
+
+**xml example**: 
+```xml
+<aop:config>
+    <aop:pointcut id="setterMethods" expression="execution(void set*(*))"/>
+    <aop:aspect ref="beanToAdvice">
+        <aop:after-returning pointcut-ref="setterMethods" method="trackChange"/>
+        <aop:after-throwing pointcut-ref="setterMethods" method="logFailure"/>
+    </aop:aspect>
+</aop:config> 
+```
+
+```java
+@Aspect
+public class SystemArchitecture {
+    @Pointcut("execution(void set*(*))")
+    public void setterMethods() {} 
+}
+```
 
 ### How do you externalize pointcuts? What is the advantage of doing this?
 
