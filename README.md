@@ -62,8 +62,18 @@ Annotations denoting the roles of types or methods in the overall architecture (
 - **global session**: Scopes a single bean definition to the lifecycle of a global HTTP Session. Typically only valid when used in a portlet context. Only valid in the context of a web-aware Spring ApplicationContext.
 
 ### What is an initialization method and how is it declared in a Spring bean?
+The initialization method on a bean is called after all injections are complete. More precisely after the injections 
+`@PostConstruct` is called, followed by the `InitializingBean.afterPropertiesSet()` method and concluded with the init-method.
+
+- **xml declaration**: `<bean id="myBean" class="com.example.MyBean" init-method="initMethodName" />`
+- **java/annotation declaration**: ` @Bean(initMethod = "initMethodName")`
 
 ### What is a destroy method, how is it declared and when is it called?
+The destroy method on a bean is called just before the bean lifecycle ends. More precisely first
+`@PreDestroy` is called, followed by the `DisposableBean.destroy()` method and concluded with the destroy-method.
+
+- **xml declaration**: `<bean id="myBean" class="com.example.MyBean" destroy-method="destroyMethodName" />`
+- **java/annotation declaration**: ` @Bean(destroyMethod = "destroyMethodName")`
 
 ### What is a BeanFactoryPostProcessor and what is it used for?
 
