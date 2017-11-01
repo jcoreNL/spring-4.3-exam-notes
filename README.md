@@ -5,12 +5,36 @@ Remember: Unless a question explicitly references Spring Boot you can assume Spr
 ## Container, Dependency, and IOC
 
 ### What is dependency injection and what are the advantages?
-
+ dependency injection is a technique whereby one object supplies the dependencies of another object. A dependency is an 
+ object that can be used (a service). An injection is the passing of a dependency to a dependent object (a client) that 
+ would use it. The service is made part of the client's state.[1] Passing the service to the client, rather than 
+ allowing a client to build or find the service, is the fundamental requirement of the pattern.
+ 
 ### What is an interface and what are the advantages of making use of them in Java?
+An interface is a contract that defines a set of functionality which must be implemented by a concrete class. Interfaces 
+allow for multiple inheritance in Java. 
+Interfaces allow for dependency injection without knowing the exact implementation.
 
 ### What is meant by “application-context” and how do you create one?
+The ApplicationContext is the central interface within a Spring application for providing configuration information to 
+the application. It is read-only at run time, but can be reloaded if necessary and supported by the application. 
+A number of classes implement the ApplicationContext interface, allowing for a variety of configuration options and 
+types of applications.
+
+The ApplicationContext provides:
+- Bean factory methods for accessing application components.
+- The ability to load file resources in a generic fashion.
+- The ability to publish events to registered listeners.
+- The ability to resolve messages to support internationalization.
+- Inheritance from a parent context.
+
+Create an application-context:
+`ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/application-context.xml");`
 
 ### What is the concept of a “container” and what is its lifecycle?
+The application-context (see last question) represents the Spring Inversion of Control Container. 
+
+**Todo: container lifecycle?**
 
 ### How do you use dependency injection using Java configuration
 
@@ -19,10 +43,23 @@ Remember: Unless a question explicitly references Spring Boot you can assume Spr
 ### How do you use dependency injection using annotations (`@Component`,`@Autowired`)
 
 ### What is Component scanning
+Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations 
+and add them to the bean definitions dynamically.
 
 ### What are Stereotypes and Meta-Annotations
+Annotations denoting the roles of types or methods in the overall architecture (at a conceptual, rather than implementation, level).
+
+- `@Component`
+- `@Controller`
+- `@Repository`
+- `@Service`
 
 ### Scopes for Spring beans. What is the default?
+- **singleton**_(default)_: Scopes a single bean definition to a single object instance per Spring IoC container.
+- **prototype**: Scopes a single bean definition to any number of object instances.
+- **request**: Scopes a single bean definition to the lifecycle of a single HTTP request; that is each and every HTTP request will have its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring ApplicationContext.
+- **session**: Scopes a single bean definition to the lifecycle of a HTTP Session. Only valid in the context of a web-aware Spring ApplicationContext.
+- **global session**: Scopes a single bean definition to the lifecycle of a global HTTP Session. Typically only valid when used in a portlet context. Only valid in the context of a web-aware Spring ApplicationContext.
 
 ### What is an initialization method and how is it declared in a Spring bean?
 
