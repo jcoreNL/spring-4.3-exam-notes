@@ -57,9 +57,13 @@ Annotations denoting the roles of types or methods in the overall architecture (
 ### Scopes for Spring beans. What is the default?
 - **singleton**_(default)_: Scopes a single bean definition to a single object instance per Spring IoC container.
 - **prototype**: Scopes a single bean definition to any number of object instances.
-- **request**: Scopes a single bean definition to the lifecycle of a single HTTP request; that is each and every HTTP request will have its own instance of a bean created off the back of a single bean definition. Only valid in the context of a web-aware Spring ApplicationContext.
-- **session**: Scopes a single bean definition to the lifecycle of a HTTP Session. Only valid in the context of a web-aware Spring ApplicationContext.
-- **global session**: Scopes a single bean definition to the lifecycle of a global HTTP Session. Typically only valid when used in a portlet context. Only valid in the context of a web-aware Spring ApplicationContext.
+- **request**: Scopes a single bean definition to the lifecycle of a single HTTP request; that is each and every HTTP 
+request will have its own instance of a bean created off the back of a single bean definition. Only valid in the context 
+of a web-aware Spring ApplicationContext.
+- **session**: Scopes a single bean definition to the lifecycle of a HTTP Session. Only valid in the context of a 
+web-aware Spring ApplicationContext.
+- **global session**: Scopes a single bean definition to the lifecycle of a global HTTP Session. Typically only valid 
+when used in a portlet context. Only valid in the context of a web-aware Spring ApplicationContext.
 
 ### What is an initialization method and how is it declared in a Spring bean?
 The initialization method on a bean is called after all injections are complete. More precisely after the injections 
@@ -76,8 +80,18 @@ The destroy method on a bean is called just before the bean lifecycle ends. More
 - **java/annotation declaration**: ` @Bean(destroyMethod = "destroyMethodName")`
 
 ### What is a BeanFactoryPostProcessor and what is it used for?
+Allows for custom modification of an application context's bean definitions, adapting the bean property values of the 
+context's underlying bean factory.  
+A BeanFactoryPostProcessor may interact with and modify bean definitions, but never bean instances. 
+Doing so may cause premature bean instantiation, violating the container and causing unintended side-effects. 
+If bean instance interaction is required, consider implementing BeanPostProcessor instead.
 
 ### What is a BeanPostProcessor and how is the difference to a BeanFactoryPostProcessor? What do they do? When are they called?
+Factory hook that allows for custom modification of new bean instances, e.g. checking for marker interfaces or wrapping 
+them with proxies. 
+A BeanFactoryPostProcessor may interact with and modify bean definitions, but never bean instances. 
+Doing so may cause premature bean instantiation, violating the container and causing unintended side-effects. 
+If bean instance interaction is required, consider implementing BeanPostProcessor instead.
 
 ### Are beans lazily or eagerly instantiated by default? How do you alter this behavior?
 Beans are eagerly instantiated by default. This behavior can be altered by either setting the `lazy-init="true"` using 
@@ -86,30 +100,68 @@ xml configuration or adding the `@Lazy` annotation to a bean definition.
 xml example: `<bean id="myBean" class="com.example.MyBean" lazy-init="true"/>`
 
 ### What does component-scanning do?
+Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations 
+and add them to the bean definitions dynamically.
 
 ### What is the behavior of the annotation `@Autowired` with regards to field injection, constructor injection and method injection?
+The `@Autowired` annotation injects an instance of an implementation of the needed class or interface into the field, 
+constructor or method. For constructors and methods the dependency needs to be an argument to that method or constructor.
 
 ### How does the `@Qualifier` annotation complement the use of `@Autowired`?
+In case there are multiple implementations of the dependency that you are trying to autowire, Spring may not be able to 
+figure out which instance should be injected. The `@Qualifier` annotation is used to specify which implementation is 
+required.
 
 ### What is the role of the `@PostConstruct` and `@PreDestroy` annotations? When will they get called?
 A method annotated with `@PostConstruct` will be called directly after all injections have taken place.  
 A method annotated with `@PreDestroy` will be called just before the bean lifecycle ends and the bean is destroyed.
 
 ### What is a proxy object and what are the two different types of proxies Spring can create?
+A proxy object is like a wrapper around the object instance which can add behavior on top of the original object's 
+implementation.
+
+Spring can create JDK Dynamic Proxies and CGLIB Proxies.
 
 ### What is the power of a proxy object and where are the disadvantages?
+The power of proxies is that they can add behavior to an object without cluttering the actual object implementation with 
+this behavior.
 
 ### What are the limitations of these proxies (per type)?
+- JDK dynamic proxies:
+    - Can only proxy objects which implement at least one interface and only the methods 
+    defined by the implemented interfaces.
+- CGLIB:
+    - final methods cannot be advised, as they cannot be overriden.
+    - You will need the CGLIB 2 binaries on your classpath, whereas dynamic proxies are available with the JDK. 
+    Spring will automatically warn you when it needs CGLIB and the CGLIB library classes are not found on the classpath.
+    - The constructor of your proxied object will be called twice. This is a natural consequence of the CGLIB proxy model 
+    whereby a subclass is generated for each proxied object. For each proxied instance, two objects are created: the actual 
+    proxied object and an instance of the subclass that implements the advice. This behavior is not exhibited when using JDK proxies. 
+    Usually, calling the constructor of the proxied type twice, is not an issue, as there are usually only assignments 
+    taking place and no real logic is implemented in the constructor.
 
 ### How do you inject scalar/literal values into Spring beans?
+The `@Value` annotation is used to inject literal values into fields, constructors or methods. With `@Value` it is 
+possible to inject property- and environment values. It is also possible to use _SpEL_ in `@Value`.
+
+**xml literal value constructor injection:**  
+```xml
+<bean id="myBean" class="com.example.MyBean">
+    <constructor-arg index="0" value="myLiteral"/>
+</bean>
+```
 
 ### How are you going to create a new instance of an ApplicationContext?
+Create an application-context:
+`ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/application-context.xml");`
+
 
 ### What is a prefix?
 
 ### What is the lifecycle on an ApplicationContext?
 
 ### What does the `@Bean` annotation do?
+The `@Bean` annotation registers a Spring bean which can be registered in the application context 
 
 ### How are you going to create an ApplicationContext in an integration test or a JUnit test?
 
@@ -199,6 +251,7 @@ compile time (using the AspectJ compiler, for example), load time, or at runtime
 frameworks, performs weaving at runtime.
 
 ### How does Spring solve (implement) a cross cutting concern?
+Spring uses proxies to add cross cutting concern logic to a bean in a dynamic way.
 
 ### Which are the limitations of the two proxy-types?
 - JDK dynamic proxies:
@@ -217,6 +270,10 @@ frameworks, performs weaving at runtime.
 - **around**: Run advice before and after the advised method is invoked.
 
 ### What do you have to do to enable the detection of the `@Aspect` annotation?
+Add _aspectjweaver.jar_ and _aspectjrt.jar_ to the classpath.
+
+**xml:** add `<aop:aspectj-autoproxy />` to configuration
+**java:** add `@AspectJAutoProxy` to configuration
 
 ### Name three typical cross cutting concerns.
 - Transactions
@@ -285,6 +342,8 @@ after-throwing
 ## Data Management: JDBC, Transactions, JPA, Spring Data
 
 ### What is the difference between checked and unchecked exceptions?
+Checked exceptions must be caught or explicitly passed on by the caller, while unchecked exceptions don't have this 
+restriction but can at the same time be more of a silent killer.
 
 ### Why do we (in Spring) prefer unchecked exceptions?
 Checked exceptions are a form of tight-coupling.
