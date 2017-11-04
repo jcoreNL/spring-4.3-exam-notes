@@ -457,7 +457,7 @@ _(You would not have to remember the interface names in the exam, but you should
 
 ### What does the InternalResourceViewResolver do?
 
-## Security
+## Security 
 
 ### What is the delegating filter proxy?
 
@@ -564,18 +564,39 @@ _(You would not have to remember the interface names in the exam, but you should
 ## Microservices
 
 ### What is a microservices architecture?
+A microservice architecture is an architectural style that structures an application as a collection of loosely coupled 
+services, which implement business capabilities.
 
 ### What are the advantages and disadvantages of microservices?
+**Advantages:** 
+- Possibility to scale individual parts of the application
+- Reusability of services for multiple end goals
+- Microservices can be individually developed more easily
+- Possibility to use a different language and datastore for each service
+- Individual parts of the application can have their own release cycle
 
-### What sub-projects of Spring Cloud did we cover in the course?
-_Spring Cloud is a large umbrella project – only what we covered in the course will be tested_
+**Disadvantages:** 
+- More overhead per service (memory, network)
+- Transactional behavior gets a lot more complicated
 
 ### What are the Spring Cloud annotations and configuration we used in the course?
+- `@EnableEurekaServer`
+- `@EnableDiscoveryClient`
+- `@LoadBalanced`
 
 ### What Netflix projects were used in the course?
+Eureka and Ribbon
 
 ### What is Service Discovery? How is this related to Eureka?
+Microservices need to be able to find each other on the network to be able to 'talk'. This is done through a discovery 
+service. Eureka is a discovery service.
 
 ### How do you setup Service Discovery?
+- Start a service annotated with `@EnableEurekaServer`. This is the discovery client.
+- Now each service can be annotated with `@EnableDiscoveryClient`. This makes them register at the EurekaServer based on 
+the `eureka.client.serviceUrl.defaultZone` property which has to be set with the Eureka Server Url.
 
 ### How do you access a RESTful microservice?
+With the previous setup the `RestTemplate` is able to resolve the URI of a service based on their logical name set in the 
+`spring.application.name` property.  
+The `RestTemplate` can be annotated with `@LoadBalanced` to automatically use Ribbon for load balancing.
