@@ -536,30 +536,64 @@ _(You would not have to remember the interface names in the exam, but you should
 ## Spring Boot
 
 ### What is Spring Boot?
+Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run". 
+We take an opinionated view of the Spring platform and third-party libraries so you can get started with minimum fuss. 
+Most Spring Boot applications need very little Spring configuration.
+
+Features:
+- Create stand-alone Spring applications
+- Embed Tomcat, Jetty or Undertow directly (no need to deploy WAR files)
+- Provide opinionated 'starter' POMs to simplify your Maven configuration
+- Automatically configure Spring whenever possible
+- Provide production-ready features such as metrics, health checks and externalized configuration
+- Absolutely no code generation and no requirement for XML configuration
 
 ### What are the advantages of using Spring Boot?
+Spring Boot allows for easy/fast startup of application development, because less configuration is required.
 
 ### Why is it “opinionated”?
+Spring Boot uses sensible defaults (opinions). All defaults can be overridden, however.
 
 ### How does it work? How does it know what to configure?
+Spring Boot configures it's defaults based on the contents of the classpath and property files.
 
 ### What things affect what Spring Boot sets up?
+- Classpath contents
+- Property files contents
 
 ### How are properties defined? Where?
+Properties can be defined in `application.properties` or `application.yml` files and profiled property files.
 
 ### What are the common Spring Boot annotations and configuration properties?
 
 ### What is the difference between an embedded container and a WAR?
+A WAR file needs to be run inside an application server while Spring Boot applications can be build with an embedded 
+container, which results in a JAR file which can run independently.
 
 ### What embedded containers does Spring Boot support?
+- Tomcat
+- Jetty
+- Undertow
 
 ### What does `@EnableAutoConfiguration` do? What about `@SpringBootApplication`?
+- `@EnableAutoConfiguration` causes Spring Boot to automatically create beans it thinks you need.
+- `@SpringBootApplication` is a combination of `@Configuration`, `@ComponentScan` and `EnableAutoConfiguration`. 
 
 ### What is a Spring Boot starter POM? Why is it useful?
+A Spring Boot starter POM is a predefined POM file with all basic dependencies needed for a particular case. 
+This allows users to immediately start with implementing business logic, because Spring Boot automatically configures 
+these dependencies.
 
 ### Spring Boot supports both Java properties and YML files. What do they look like and how do they work?
 
 ### Can you control logging with Spring Boot? How?
+The logging level can be set per package through property files.
+
+example: 
+```properties
+logging.level.org.springframework=DEBUG
+logging.level.com.mycompany.mypackage=INFO
+```
 
 ## Microservices
 
