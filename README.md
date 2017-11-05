@@ -602,8 +602,13 @@ Yes, REST is scalable because it is stateless.
 ### What are the advantages of the RestTemplate?
 
 ### Which HTTP methods does REST use?
+- GET
+- PUT
+- POST
+- DELETE
 
 ### What is an HttpMessageConverter?
+The `HttpMessageConverter` convert HTTP request/response body data to/from domain objects. 
 
 ### Is REST normally stateless?
 Yes, REST is designed to prevent state keeping on a server.
@@ -619,9 +624,10 @@ see previous question
 
 ### When do you need `@ResponseBody`?
 If the returned value of a controller method is the actual response body instead of a logical view name the `@ResponseBody` 
-is needed.
+is needed. This also takes care of automatic marshalling if a converter is available.
 
 ### What does `@PathVariable` do?
+`@PathVariable` extracts a part of the `@RequestMapping` path as method argument for use in the implemented logic.
 
 ### What is the HTTP status return code for a successful DELETE statement?
 
