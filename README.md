@@ -276,13 +276,16 @@ Add _aspectjweaver.jar_ and _aspectjrt.jar_ to the classpath.
 **java:** add `@AspectJAutoProxy` to configuration
 
 ### Name three typical cross cutting concerns.
-- Transactions
+- Transaction Management
 - Security
-- Logging
+- Logging and Tracing
 - Caching
+- Error Handling
+- Performance Monitoring
+- Custom Business Rules
 
 ### What two problems arise if you don't solve a cross cutting concern via AOP?
-- **Code clutter**: Code for the crosscutting concerns clutters each method where that logic is needed.
+- **Code clutter/tangling**: Code for the crosscutting concerns clutters each method where that logic is needed and mixes concerns.
 - **Code scattering**: Code for the crosscutting concerns is scattered over many methods. When a change has to be made 
 to the logic, it might have to be changed over many methods.
 
@@ -324,8 +327,11 @@ public class SystemArchitecture {
 ### How do you externalize pointcuts? What is the advantage of doing this?
 
 ### What is the JoinPoint argument used for?
+The JoinPoint argument of an aspect is used for controlling the flow of the advised method call.
 
 ### What is a ProceedingJoinPoint?
+A `ProceedingJoinPoint` inherits from `JoinPoint` and adds the `proceed()` method, which can be used in an around advice 
+to either proceed or not proceed with the original method call.
 
 ### What are the five advice types called?
 - **before**: Run advice before the method execution. 	
@@ -349,49 +355,93 @@ restriction but can at the same time be more of a silent killer.
 Checked exceptions are a form of tight-coupling.
 
 ### What is the data access exception hierarchy?
+The data access exception hierarchy uncouples database technology from the business logic by converting specific exceptions 
+to more general DataAccessException subclasses which are consistent across all supported Data Access technologies and are unchecked.
 
 ### How do you configure a DataSource in Spring? Which bean is very useful for development/test databases?
+The `EmbeddedDatabaseBuilder` is ideal for creating an embedded development/test `DataSource`
 
+For xml configuration the `<jdbc:embedded-database>` element can be used.
 ### What is the Template design pattern and what is the JDBC template?
+Define the outline or skeleton of an algorithm.
+- Leave the details to specific implementations later
+- Hides away large amounts of boilerplate code
 
 ### What is a callback? What are the three JdbcTemplate callback interfaces described in the notes? What are they used for?
 _(You would not have to remember the interface names in the exam, but you should know what they do if you see them in a code sample)._
 
 ### Can you execute a plain SQL statement with the JDBC template?
+Yes, SQL queries can be passed to the multiple query methods of the JDBC template.
 
 ### Does the JDBC template acquire (and release) a connection for every method called or once per template?
+JDBC template acquires and releases a connection for every method called.
 
 ### Is the JDBC template able to participate in an existing transaction?
+Yes, JDBC automatically participates in a transaction.
 
 ### What is a transaction? What is the difference between a local and a global transaction?
+- Global Transaction is an application server managed transaction, allowing to work with different transactional resources 
+(this might be two different database, database and message queue, etc)
+- Local Transaction is resource specific transaction (for example Oracle Transactions) and application server has nothing 
+to do with them.
 
 ### Is a transaction a cross cutting concern? How is it implemented in Spring?
+Yes, transactions are implemented through AOP.
 
 ### How are you going to set up a transaction in Spring?
+- Declare a `PlatformTransactionManager` bean
+- Declare the transactional methods
+    - Using Annotations, XML, Programmatic
+    - Can mix and match
 
 ### What does `@Transactional` do? 
+The `@Transactional` annotation marks a method (or all methods if placed on class level) to be run inside a transaction.
+
+- Transaction started before entering the method
+- Commit at the end of the method
+- Rollback if method throws a RuntimeException
 
 ### What is the PlatformTransactionManager?
+The `PlatformTransactionManager` is an abstraction layer which hides the implementation details of data access technology 
+specific transaction handling.
 
 ### What is the TransactionTemplate? Why would you use it?
 
 ### What is a transaction isolation level? How many do we have and how are they ordered?
+Transaction isolation levels set the access concurrent transactions have to changes by each other.
+
+- `READ_UNCOMMITTED`: allows dirty reads, shows result of other uncommitted units-of-work.
+- `READ_COMMITTED` _(default for most databases)_: Only committed information can be accessed.
+- `REPEATABLE_READ`: Does not allow dirty reads. Non-repeatable reads are prevented: reading a row twice in one transaction 
+will have same result.
+- `SERIALIZABLE`: Does not allow dirty reads and non-repeatable reads. Also prevents phantom reads.
 
 ### What is the difference between `@EnableTransactionManagement` and `<tx:annotation-driven>`?
 
 ### How does the JdbcTemplate support generic queries? How does it return objects and lists/maps of objects?
 
 ### What does transaction propagation mean?
+Transaction propagation is the way transactions act if another transaction has to be started during a transaction. 
+The new transaction can either be embedded or the current transaction will be used for this transaction.
 
 ### What happens if one `@Transactional` annotated method is calling another `@Transactional` annotated method on the same object instance?
+By default the propagation type is `Propagation.REQUIRED`, which uses the current transaction for any new transactions. 
+The `Propagation.REQUIRES_NEW` embeds a new transaction by suspending the current transaction and starting a new one.
 
 ### Where can the `@Transactional` annotation be used? What is a typical usage if you put it at class level?
+The annotation can be used on both method and class level. At class level every method will be transactional. 
+
+A typical usage of putting the `@Transactional` on class level is on a Repository level class in a layered architecture.
 
 ### What does declarative transaction management mean?
 
 ### What is the default rollback policy? How can you override it?
+The default rollback policy is to rollback on runtime exceptions. It can be overridden by setting the `rollbackFor` and 
+`noRollbackFor` properties of `@Transactional` with the (un)wanted exception classes to rollback for.
 
 ### What is the default rollback policy in a JUnit test, when you use the SpringJUnit4ClassRunner and annotate your `@Test` annotated method with `@Transactional`?
+By default the transaction is rolled back after the test is run. No need to clean up the database yourself after testing. 
+By adding the `@Commit` annotation to a test this behavior can be overridden.
 
 ### Why is the term "unit of work" so important and why does JDBC AutoCommit violate this pattern?
 
