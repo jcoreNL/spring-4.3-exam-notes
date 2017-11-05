@@ -543,12 +543,23 @@ The root application context can still be loaded through the `ContextLoaderListe
 ## Security 
 
 ### What is the delegating filter proxy?
+`DelegatingFilterProxy` is a chain of Spring configured security filters.
 
 ### What is the security filter chain?
+The instance of the `DelegatingFilterProxy` **must** be called `springSecurityFilterChain`. _(see previous question)_
 
 ### In the notes several predefined filters were shown. What do they do and what order do they occur in?
+- `SecurityContextPersistenceFilter`: Creates and manages the security context 
+- `LogoutFilter`: Handles logout requests by clearing the security context and redirecting to logout success url.
+- `UsernamePasswordAuthenticationFilter`: Handles login requests by populating the security context and redirecting to 
+either the target url or failure url depending on the Authentication Managers response.
+- `ExceptionTranslationFilter`: Handles exceptions thrown further on in the chain by translating them to an action.
+- `FilterSecurityInterceptor`: Checks with the access decision manager whether the current resource request is allowed 
+and either throws an appropriate exception or returns the resource based on the response.
 
 ### Are you able to add and/or replace individual filters?
+Yes, filters can be added to the chain either before or after existing filters. They can also be replaced by adding a filter 
+which extends the filter to be replaced.
 
 ### Is it enough to hide sections of my output (e.g. JSP-Page)?
 
@@ -559,6 +570,8 @@ The root application context can still be loaded through the `ContextLoaderListe
 ### Is security a cross cutting concern? How is it implemented internally?
 
 ### What do `@Secured` and `@RolesAllowed` do? What is the difference between them?
+- `@RolesAllowed` is a JSR-250 annotation which only allows method security based on roles.
+- `@Secured` allows for some extra security options on top of role-based security.
 
 ### What is a security context?
 
@@ -567,8 +580,10 @@ The root application context can still be loaded through the `ContextLoaderListe
 ### How is a Principal defined?
 
 ### What is authentication and authorization? Which must come first?
+Authentication is checking who you are. Authorization is checking what you can do/see based on who you are.
 
 ### In which security annotation are you allowed to use SpEL?
+The `@PreAuthorize`, `@PostAuthorize`, `@PreFilter` and `@PostFilter` annotations allows for SpEL arguments.
 
 ### Does Spring Security support password hashing? What is salting?
 
