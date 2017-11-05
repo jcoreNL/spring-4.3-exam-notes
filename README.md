@@ -446,36 +446,69 @@ By adding the `@Commit` annotation to a test this behavior can be overridden.
 ### Why is the term "unit of work" so important and why does JDBC AutoCommit violate this pattern?
 
 ### What does JPA mean - what is ORM? What is the idea behind an ORM?
+- **JPA**: Java Persistance API
+- **ORM**: Object Relational Mapping
+
+ORM maps domain objects onto relational databases which allows the user to seemingly directly store/retrieve domain 
+objects in/from a relational database.
 
 ### What is a PersistenceContext and what is an EntityManager. What is the relationship between both?
+A `PersistenceContext` is a group of persistent objects in combination with a unit of work. This `PersistenceContext` is 
+managed by an `EntityManager`. An instance of `EntityManager` is often bound to a transaction.
 
 ### Why do you need the `@Entity` annotation. Where can it be placed?
+The `@Entity` annotation marks a POJO as a relational entity which can be mapped and stored/retrieved. 
+It is placed on class level.
 
 ### What do you need to do in Spring if you would like to work with JPA?
+- Define an EntityManagerFactory bean
+- Define a DataSource
+- Define a Transaction Manager bean
+- Define Mapping Metadata
+- Define DAOs
 
 ### Are you able to participate in a given transaction in Spring while working with JPA?
 
 ### What does `@PersistenceContext` do?
+- JPA;s equivalent to `@Autowired`
+- At runtime the proxy resolves to current `EntityManager` for current transaction in current thread
 
 ### What are disadvantages of ORM? What are the benefits?
 
 ### What is an "instant repository"? (hint:recall Spring Data)
+Spring Data can automatically create an implementation of a user defined repository instance. CRUD methods are auto-generated. 
+Paging, custom queries and sorting are supported out-of-the-box.
 
 ### How do you define an “instant” repository?
+- Annotate comain class: define keys and enable persistence
+- Create an interface which extends from `Repository<T, K>`
 
 ### What is `@Query` used for?
+`@Query` is used to add custom query methods to an instant repository by specifying a query as annotation argument on a 
+method in the interface.
 
 ## Spring MVC and the Web Layer
 
 ### MVC is an abbreviation for a design pattern. What does it stand for and what is the idea behind it?
+The Model, View, Controller architecture splits an application into the domain models, the frontend (view) and the 
+controller which links the model and view with business logic.
 
 ### Do you need spring-mvc.jar in your classpath or is it part of spring-core?
 
 ### What is the DispatcherServlet and what is it used for?
+The `DispatcherServlet`:
+- handles all incoming request and dispatches them to their respective controllers
+- Receives the model and Logical view name from the controller.
+- Consults the View Resolver to find the correct View.
+- Renders the View with the Model
+- Responds with the rendered view to the original request.
 
 ### Is the DispatcherServlet instantiated via an application context?
+The `DispatcherServlet` is defined by the `WebApplicationInitializer` or a `web.xml` file. It creates a seperate servlet 
+application context with a private configuration.
 
 ### What is the root application context? How is it loaded?
+The root application context can still be loaded through the `ContextLoaderListener` which is shared across servlets.
 
 ### What is the `@Controller` annotation used for? How can you create a controller without an annotation?
 
@@ -542,14 +575,29 @@ By adding the `@Commit` annotation to a test this behavior can be overridden.
 ## REST
 
 ### What does REST stand for?
+Representational state transfer
 
 ### What is a resource?
+The fundamental concept in any RESTful API is the resource. A resource is an object with a type, associated data, 
+relationships to other resources, and a set of methods that operate on it. It is similar to an object instance in an 
+object-oriented programming language, with the important difference that only a few standard methods are defined for 
+the resource (corresponding to the standard HTTP GET, POST, PUT and DELETE methods), while an object instance typically 
+has many methods.
 
 ### What are safe REST operations?
+Safe methods are HTTP methods that do not modify resources. For instance, using GET or HEAD on a resource URL, should 
+NEVER change the resource. However, this is not completely true. It means: it won't change the resource representation. 
+It is still possible, that safe methods do change things on a server or resource, but this should not reflect in a 
+different representation. 
 
 ### What are idempotent operations? Why is idempotency important?
+An idempotent HTTP method is a HTTP method that can be called many times without different outcomes. It would not matter 
+if the method is called only once, or ten times over. The result should be the same. Again, this only applies to the result, 
+not the resource itself. This still can be manipulated (like an update-timestamp, provided this information is not shared 
+in the (current) resource representation.
 
 ### Is REST scalable and/or interoperable?
+Yes, REST is scalable because it is stateless.
 
 ### What are the advantages of the RestTemplate?
 
@@ -558,20 +606,27 @@ By adding the `@Commit` annotation to a test this behavior can be overridden.
 ### What is an HttpMessageConverter?
 
 ### Is REST normally stateless?
+Yes, REST is designed to prevent state keeping on a server.
 
 ### What does `@RequestMapping` do?
 
 ### Is `@Controller` a stereotype? Is `@RestController` a stereotype?
+`@Controller` is a stereotype, but `@RestController` is not, because the `@RestController` implicitly adds the 
+`@ResponseBody` annotation to all methods annotated with `@RequestMapping`, while stereotypes should not differ in behavior.
 
 ### What is the difference between `@Controller` and `@RestController`?
+see previous question
 
 ### When do you need `@ResponseBody`?
+If the returned value of a controller method is the actual response body instead of a logical view name the `@ResponseBody` 
+is needed.
 
 ### What does `@PathVariable` do?
 
 ### What is the HTTP status return code for a successful DELETE statement?
 
 ### What does CRUD mean?
+Create, Read (Retrieve), Update, Delete (Destroy)
 
 ### Is REST secure? What can you do to secure it?
 
