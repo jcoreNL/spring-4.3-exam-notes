@@ -170,6 +170,14 @@ Spring injects fields annotated with `@Autowired` through reflection. This also 
 effort is needed. Additionally constructor and setter injection also work for setting private fields.
 
 ### What are the advantages of JavaConfig? What are the limitations?
+- Advantages:
+  - JavaConfig is type safe, errors can be found at compile-time
+  - Refactoring is easier because of compile-time checking
+  - XML is verbose, so configuration files can quickly grow big (although imports can be used)
+
+- Limitations
+  - XML config is completely decoupled from Java, while spring annotations such as @autowired still have a form of coupling
+  - TODO: other limitations
 
 ### What is the default bean id if you only use `@Bean`?
 The name of the method annotated with `@Bean` wil be used as the default id of the bean.
@@ -178,6 +186,7 @@ The name of the method annotated with `@Bean` wil be used as the default id of t
 Yes, the `@Profile` annotation can be used on method level to include/exclude a bean based on the active profile.
 
 ### What is Spring Expression Language (SpEL for short)?
+The Spring Expression Language (SpEL) is a powerful expression language that supports querying and manipulating an object graph at runtime. It can be used with XML or annotation-based Spring configurations.
 
 ### What is the environment abstraction in Spring?
 
@@ -222,6 +231,10 @@ call which is not the expected singleton behavior.
 ### What is `@Value` used for?
 
 ### What is the difference between $ and # in `@Value` expressions?
+- `${...}` is the property placeholder syntax. It can only be used to dereference properties.
+- `#{...}` is SpEL syntax, which is far more capable and complex. It can also handle property placeholders, and a lot more besides.
+
+Property placeholders cannot contain SpEL expressions, but expressions can contain property references: `#{${someProperty} + 2}`
 
 ## Aspect oriented programming
 
@@ -417,6 +430,7 @@ will have same result.
 - `SERIALIZABLE`: Does not allow dirty reads and non-repeatable reads. Also prevents phantom reads.
 
 ### What is the difference between `@EnableTransactionManagement` and `<tx:annotation-driven>`?
+Both  @EnableTransactionManagement and `<tx:annotation-driven/>` are responsible for registering the necessary Spring components that power annotation-driven transaction management. Both have the attribute transactionManager / transaction-manager="". The difference is that, if the attribute is not explicitly set, `<tx:annotation-driven/>` is hard-wired to look for a bean _named_ "transactionManager" by default, while the @EnableTransactionManagement is will fall back to a _by-type_ lookup for any PlatformTransactionManager bean in the container.
 
 ### How does the JdbcTemplate support generic queries? How does it return objects and lists/maps of objects?
 
@@ -434,6 +448,7 @@ The annotation can be used on both method and class level. At class level every 
 A typical usage of putting the `@Transactional` on class level is on a Repository level class in a layered architecture.
 
 ### What does declarative transaction management mean?
+Declarative transaction management is a model build on AOP. Spring has some transactional aspects that may be used to advise methods for them to work in a transactional manner. Declarative transaction management has the least impact on application code, and hence is most consistent with the ideals of a non-invasive lightweight container.
 
 ### What is the default rollback policy? How can you override it?
 The default rollback policy is to rollback on runtime exceptions. It can be overridden by setting the `rollbackFor` and 
