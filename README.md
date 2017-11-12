@@ -56,12 +56,18 @@ The application-context (see last question) represents the Spring Inversion of C
 Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations and add them to the bean definitions dynamically.
 
 ### What are Stereotypes and Meta-Annotations
-Annotations denoting the roles of types or methods in the overall architecture (at a conceptual, rather than implementation, level).
+Stereotypes are annotations denoting the roles of types or methods in the overall architecture (at a conceptual, rather than implementation, level). For instance:
+`@Component`, `@Controller`, `@Repository`, `@Service`.
 
-- `@Component`
-- `@Controller`
-- `@Repository`
-- `@Service`
+An annotation is termed a meta-annotation if it is used on another annotation, such as the `@Component` being used as a meta-annotation in the `@Controller` annotation:
+
+```java
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Component // <-- here
+public @interface Controller { ... }
+```
 
 ### Scopes for Spring beans. What is the default?
 - **singleton**_(default)_: Scopes a single bean definition to a single object instance per Spring IoC container.
@@ -581,6 +587,11 @@ application context with a private configuration.
 The root application context can still be loaded through the `ContextLoaderListener` which is shared across servlets.
 
 ### What is the `@Controller` annotation used for? How can you create a controller without an annotation?
+It indicates that an annotated class is a "Controller" (e.g. a web controller). The `@Controller` annotation itself is annotated with `@Component`, meaning that every controller is a component (allowing for implementation classes to be autodetected through classpath scanning).
+
+Spring 4.0 introduced `@RestController`, a specialized version of the controller which is a convenience annotation that does nothing more than add the `@Controller` and `@ResponseBody` annotations. By annotating the controller class with @RestController annotation, you no longer need to add `@ResponseBody` to all the request mapping methods. The `@ResponseBody` annotation is active by default.
+
+To create a controller without the `@Controller` annotation (and thus without component-scanning); define it as a bean, let it implement the `Controller` interface and override the `handleRequest()` method.
 
 ### What is the ContextLoaderListener and what does it do?
 
@@ -597,7 +608,7 @@ The @RequestParam annotation binds request parameters to mapping method’s para
         return someParam;
     }
 ```
-When calling `http://localhost:8080/some-endpoint?someParam=someVal`, someVal is returned.
+When calling `http://localhost:8080/some-endpoint?someParam=someVal`, someVal is returned. By default, the `required` attribute of the annotation is set to true, leading to an exception being thrown if the parameter is missing in the request. Switch this to false if you prefer a null value if the parameter is not present in the request, or provide a defaultValue(), which implicitly sets this flag to false.
 
 ### What are the differences between `@RequestParam` and `@PathVariable`?
 
