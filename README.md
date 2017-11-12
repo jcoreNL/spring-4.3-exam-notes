@@ -353,9 +353,43 @@ public class SystemArchitecture {
 ```
 
 ### How do you externalize pointcuts? What is the advantage of doing this?
+Pointcuts can be externalized by using named pointcuts. The advantage of using named pointcuts is that they can be reused:
+
+***XML:***
+```xml
+<aop:config>
+    <aop:pointcut id="namedPointcut" expression="execution(void someMethod())">
+    <aop:aspect ref="aspectBean">
+        <aop:after-returning pointcut-ref="namedPointcut" method="adviceMethod" />
+    </aop:aspect>
+
+    <bean id="aspectBean" class="...">
+</aop:config>
+```
+
+***Java:***
+```java
+@Aspect
+public class AspectBean {
+
+    // Pointcut methods are not executed, and must be void
+    @Pointcut("execution(void someMethod())")
+    public void namedPointcut() {}
+
+    @Around("namedPointcut()")
+    public void adviceMethod() { ... }
+}
+```
 
 ### What is the JoinPoint argument used for?
-The JoinPoint argument of an aspect is used for controlling the flow of the advised method call.
+The JoinPoint argument is used for retrieving different information about the adviced method (if talking about Spring AOP particularly), and controlling the flow of the adviced method. For example:
+
+```java
+@Before("execution(public void com.somepackage.someClass)")
+public void performAdvice(JoinPoint jp) {
+    System.out.println("Adviced method name: " + jp.getSignature().getName());
+}
+```
 
 ### What is a ProceedingJoinPoint?
 A `ProceedingJoinPoint` inherits from `JoinPoint` and adds the `proceed()` method, which can be used in an around advice 
@@ -490,7 +524,7 @@ The annotation can be used on both method and class level. At class level every 
 A typical usage of putting the `@Transactional` on class level is on a Repository level class in a layered architecture.
 
 ### What does declarative transaction management mean?
-Declarative transaction management is a model build on AOP. Spring has some transactional aspects that may be used to advise methods for them to work in a transactional manner. Declarative transaction management has the least impact on application code, and hence is most consistent with the ideals of a non-invasive lightweight container.
+Declarative transaction management is a model build on AOP. Spring has some transactional aspects that may be used to advice methods for them to work in a transactional manner. Declarative transaction management has the least impact on application code, and hence is most consistent with the ideals of a non-invasive lightweight container.
 
 ### What is the default rollback policy? How can you override it?
 The default rollback policy is to rollback on runtime exceptions. It can be overridden by setting the `rollbackFor` and 
@@ -600,7 +634,7 @@ To create a controller without the `@Controller` annotation (and thus without co
 ### How is an incoming request mapped to a controller and mapped to a method?
 
 ### What is the `@RequestParam` used for?
-The @RequestParam annotation binds request parameters to mapping method’s parameters:
+The @RequestParam annotation binds request parameters to mapping method’s parameters. If the attribute `name` (or its alias `value`) isn't set, the `@RequestParam` will use the name of the parameter:
 
 ```java
 @RequestMapping(path = "/some-endpoint")
@@ -608,9 +642,22 @@ The @RequestParam annotation binds request parameters to mapping method’s para
         return someParam;
     }
 ```
+
 When calling `http://localhost:8080/some-endpoint?someParam=someVal`, someVal is returned. By default, the `required` attribute of the annotation is set to true, leading to an exception being thrown if the parameter is missing in the request. Switch this to false if you prefer a null value if the parameter is not present in the request, or provide a defaultValue(), which implicitly sets this flag to false.
 
 ### What are the differences between `@RequestParam` and `@PathVariable`?
+- `@PathVariable` indicates that a method parameter should be bound to a URI template variable. Supported for RequestMapping annotated handler methods in Servlet environments.
+- `@RequestParam` indicates that a method parameter should be bound to a web request parameter.
+
+***Example***
+```java
+@RequestMapping("/example/{somePathVar}")
+public String getDetails(@PathVariable(value="somePathVar") String pathVar,
+    @RequestParam(value="someRequestParam", required=true) String requestParam){
+    ...
+}
+```
+Navigating to `http://localhost:8080/example/123?someRequestParam=456` will set `pathVar` to 123 and `requestParam` to 456.
 
 ### What are some of the valid return types of a controller method?
 
