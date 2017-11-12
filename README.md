@@ -5,10 +5,10 @@ Remember: Unless a question explicitly references Spring Boot you can assume Spr
 ## Container, Dependency, and IOC
 
 ### What is dependency injection and what are the advantages?
- dependency injection is a technique whereby one object supplies the dependencies of another object. A dependency is an 
- object that can be used (a service). An injection is the passing of a dependency to a dependent object (a client) that 
- would use it. The service is made part of the client's state.[1] Passing the service to the client, rather than 
- allowing a client to build or find the service, is the fundamental requirement of the pattern.
+Dependency injection is a technique whereby one object supplies the dependencies of another object. A dependency is an 
+object that can be used (a service). An injection is the passing of a dependency to a dependent object (a client) that 
+would use it. The service is made part of the client's state.[1] Passing the service to the client, rather than 
+allowing a client to build or find the service, is the fundamental requirement of the pattern.
  
 ### What is an interface and what are the advantages of making use of them in Java?
 An interface is a contract that defines a set of functionality which must be implemented by a concrete class. Interfaces 
@@ -43,8 +43,7 @@ The application-context (see last question) represents the Spring Inversion of C
 ### How do you use dependency injection using annotations (`@Component`,`@Autowired`)
 
 ### What is Component scanning
-Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations 
-and add them to the bean definitions dynamically.
+Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations and add them to the bean definitions dynamically.
 
 ### What are Stereotypes and Meta-Annotations
 Annotations denoting the roles of types or methods in the overall architecture (at a conceptual, rather than implementation, level).
@@ -459,6 +458,8 @@ By default the transaction is rolled back after the test is run. No need to clea
 By adding the `@Commit` annotation to a test this behavior can be overridden.
 
 ### Why is the term "unit of work" so important and why does JDBC AutoCommit violate this pattern?
+A database transaction is a sequence of actions that are treated as a single unit of work.
+A Unit of Work keeps track of everything you do during a business transaction that can affect the database. When you're done, it figures out everything that needs to be done to alter the database as a result of your work. As JDBC AutoCommit will treat each individual SQL statement as a transaction, the statements are not grouped into a single unit of work.
 
 ### What does JPA mean - what is ORM? What is the idea behind an ORM?
 - **JPA**: Java Persistance API
@@ -489,6 +490,17 @@ It is placed on class level.
 - At runtime the proxy resolves to current `EntityManager` for current transaction in current thread
 
 ### What are disadvantages of ORM? What are the benefits?
+***Disadvantages***
+- Overhead for simple applications
+- You need to learn implementation
+- The performance is lower
+- It's hard to make complex queries
+
+***Benefits***
+- Easy mapping object model to data model
+- Much less code
+- Concurrency support
+- Automatic management of cache, connection pool, transactions and keys
 
 ### What is an "instant repository"? (hint:recall Spring Data)
 Spring Data can automatically create an implementation of a user defined repository instance. CRUD methods are auto-generated. 
@@ -499,8 +511,14 @@ Paging, custom queries and sorting are supported out-of-the-box.
 - Create an interface which extends from `Repository<T, K>`
 
 ### What is `@Query` used for?
-`@Query` is used to add custom query methods to an instant repository by specifying a query as annotation argument on a 
-method in the interface.
+`@Query` is used to add custom query methods to an instant repository by specifying a query as annotation argument on a method in the interface:
+
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
+  @Query("select u from User u where u.emailAddress = ?1")
+  User findByEmailAddress(String emailAddress);
+}
+```
 
 ## Spring MVC and the Web Layer
 
@@ -534,6 +552,15 @@ The root application context can still be loaded through the `ContextLoaderListe
 ### How is an incoming request mapped to a controller and mapped to a method?
 
 ### What is the `@RequestParam` used for?
+The @RequestParam annotation binds request parameters to mapping method’s parameters:
+
+```java
+@RequestMapping(path = "/some-endpoint")
+    public String someMethod(@RequestParam String someParam) {
+        return someParam;
+    }
+```
+When calling `http://localhost:8080/some-endpoint?someParam=someVal`, someVal is returned.
 
 ### What are the differences between `@RequestParam` and `@PathVariable`?
 
@@ -579,6 +606,22 @@ which extends the filter to be replaced.
 ### Is it enough to hide sections of my output (e.g. JSP-Page)?
 
 ### Why do you need the intercept-url?
+The `<intercept-url/>` is used to define the URL for the requests that we want to have some security constraints. This tag has a pattern attribute that accepts either ant style paths or regex for matching the required resources. Access attribute accepts comma-separated roles that will be allowed to access the resource (any match will grant the access).
+
+***XML example:***
+```xml
+<http use-expressions="true">
+    <intercept-url pattern="/admin/**" access="hasRole('admin')"/>
+</http>
+```
+
+***Similar java config:***
+```java
+protected void configure(HttpSecurity http) throws Exception {
+     http.authorizeRequests()
+         .antMatchers("/admin/**").access("hasRole('admin')");
+}
+```
 
 ### Why do you need method security? What type of object is typically secured at the method level (think of its purpose not its Java type).
 
@@ -591,6 +634,7 @@ which extends the filter to be replaced.
 ### What is a security context?
 
 ### In which order do you have to write multiple intercept-url's?
+Intercept-URL patterns are always evaluated in the order they are defined. Thus it is important that more specific patterns are defined higher in the list than less specific patterns. 
 
 ### How is a Principal defined?
 
