@@ -2,6 +2,16 @@
 
 Remember: Unless a question explicitly references Spring Boot you can assume Spring Boot is not involved in any question.
 
+## Index
+1. [Container, Dependency, and IOC](#container-dependency-and-ioc)
+2. [Aspect oriented programming](#aspect-oriented-programming)
+3. [Data Management: JDBC, Transactions, JPA, Spring Data](#data-management-jdbc-transactions-jpa-spring-data)
+4. [Spring MVC and the Web Layer](#spring-mvc-and-the-web-layer)
+5. [Security](#security)
+6. [REST](#rest)
+7. [Spring Boot](#spring-boot)
+8. [Microservices](#microservices)
+
 ## Container, Dependency, and IOC
 
 ### What is dependency injection and what are the advantages?
@@ -375,9 +385,25 @@ The `EmbeddedDatabaseBuilder` is ideal for creating an embedded development/test
 
 For xml configuration the `<jdbc:embedded-database>` element can be used.
 ### What is the Template design pattern and what is the JDBC template?
-Define the outline or skeleton of an algorithm.
+In the template design pattern, an abstract class exposes defined way(s)/template(s) to execute its methods. It defines the outline or skeleton of an algorithm.
+
 - Leave the details to specific implementations later
 - Hides away large amounts of boilerplate code
+
+***Example:***
+```java
+public abstract class Game {
+   abstract void initialize();
+   abstract void startPlay();
+   abstract void endPlay();
+
+   public final void play(){
+      initialize();
+      startPlay();
+      endPlay();
+   }
+}
+```
 
 ### What is a callback? What are the three JdbcTemplate callback interfaces described in the notes? What are they used for?
 _(You would not have to remember the interface names in the exam, but you should know what they do if you see them in a code sample)._
@@ -418,6 +444,17 @@ The `PlatformTransactionManager` is an abstraction layer which hides the impleme
 specific transaction handling.
 
 ### What is the TransactionTemplate? Why would you use it?
+The TransactionTemlate is a helper class that simplifies programmatic transaction demarcation and transaction exception handling. It uses callback methods for executing some operations in a transaction. That is achieved by anonymous classes build on the TransactionCallback callback interface. 
+
+```java
+TransactionTemplate tt = new TransactionTemplate(transactionManager);
+tt.execute(new TransactionCallback() {
+    public Object doInTransaction(TransactionStatus arg0) {
+        // ...
+    }
+});
+```
+You may choose to use TransactionTemplate in case you have a small number of transactional methods in your project. 
 
 ### What is a transaction isolation level? How many do we have and how are they ordered?
 Transaction isolation levels set the access concurrent transactions have to changes by each other.
@@ -582,7 +619,7 @@ When calling `http://localhost:8080/some-endpoint?someParam=someVal`, someVal is
 
 ### What does the InternalResourceViewResolver do?
 
-## Security 
+## Security
 
 ### What is the delegating filter proxy?
 `DelegatingFilterProxy` is a chain of Spring configured security filters.
