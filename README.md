@@ -672,6 +672,7 @@ Navigating to `http://localhost:8080/example/123?someRequestParam=456` will set 
 ### What is the purpose of the session scope?
 
 ### What is the default scope in the web context?
+Singleton.
 
 ### Why are controllers testable artifacts?
 
@@ -699,6 +700,15 @@ Yes, filters can be added to the chain either before or after existing filters. 
 which extends the filter to be replaced.
 
 ### Is it enough to hide sections of my output (e.g. JSP-Page)?
+No. Although Spring Security provides a tag library to hide sections in JSP pages:
+```html
+ <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+ 
+ <sec:authorize access="hasRole('admin')">
+   Welcome, admin
+ </sec:authorize>
+```
+It only provides a form of security in the view layer. To secure the web application on a URL basis, use `authorizeRequests()` and ... in JavaConfig, or `intercept-url` in XML config.
 
 ### Why do you need the intercept-url?
 The `<intercept-url/>` is used to define the URL for the requests that we want to have some security constraints. This tag has a pattern attribute that accepts either ant style paths or regex for matching the required resources. Access attribute accepts comma-separated roles that will be allowed to access the resource (any match will grant the access).
@@ -805,7 +815,7 @@ The @RequestMapping annotation is used for mapping web requests onto specific ha
 
 ```java
 ...
-@Controller < --- A rest controller is a controller
+@Controller <--- A rest controller is a controller
 @ResponseBody <--- A rest controller has a ResponseBody annotation on class level
 public @interface RestController { ... }
 ```
@@ -829,7 +839,6 @@ public String getUser(@PathVariable String userId) { ... }
 // The method parameter can have a different name:
 @GetMapping(" /user/{someOtherName}")
 public String getUser(@PathVariable("someOtherName") String userId) { ... }
-
 ```
 
 ### What is the HTTP status return code for a successful DELETE statement?
@@ -842,14 +851,17 @@ There are no strict rules on which HTTP status code is the correct one for each 
 Create, Read (Retrieve), Update, Delete (Destroy)
 
 ### Is REST secure? What can you do to secure it?
+REST is not a specific web service but a design concept (architecture) for managing state information. Therefore, REST by itself does not provide any form of security. To secure a REST service, several security protocols (such as OAuth 2.0 and TLS) are available. On an applicational level, Spring Security can be considered.
 
 ### Where do you need `@EnableWebMVC`?
 
 ### Name some common http response codes. When do you need `@ResponseStatus`?
 
 ### Does REST work with transport layer security (TLS)?
+Yes. Transport Layer Security can encrypt the communication to a RESTful Webservice and authenticate the server to a client.
 
 ### Do you need Spring MVC in your classpath?
+Yes. Spring MVC is the core component for REST support.
 
 ## Spring Boot
 
