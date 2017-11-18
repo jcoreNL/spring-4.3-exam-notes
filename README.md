@@ -771,34 +771,72 @@ Yes, REST is scalable because it is stateless.
 ### What are the advantages of the RestTemplate?
 
 ### Which HTTP methods does REST use?
-- GET
-- PUT
-- POST
-- DELETE
+Method  | Spring RestTemplate’s method
+------- | -------
+DELETE  | delete(java.lang.String, java.lang.Object...)
+GET     | getForObject(java.lang.String, java.lang.Class<T>, java.lang.Object...), getForEntity(java.lang.String, java.lang.Class<T>, java.lang.Object...)
+HEAD    | headForHeaders(java.lang.String, java.lang.Object...)
+OPTIONS | optionsForAllow(java.lang.String, java.lang.Object...)
+POST    | postForLocation(java.lang.String, java.lang.Object, java.lang.Object...), postForObject(java.lang.String, java.lang.Object, java.lang.Class<T>, java.lang.Object...)
+PUT     | put(java.lang.String, java.lang.Object, java.lang.Object...)
 
 ### What is an HttpMessageConverter?
-The `HttpMessageConverter` convert HTTP request/response body data to/from domain objects. 
+The `HttpMessageConverter` convert HTTP request/response body data to/from domain objects. Message converters are used to marshall and unmarshall Java Objects to and from JSON, XML, etc – over HTTP
 
 ### Is REST normally stateless?
 Yes, REST is designed to prevent state keeping on a server.
 
 ### What does `@RequestMapping` do?
+The @RequestMapping annotation is used for mapping web requests onto specific handler classes and/or handler methods. Since Spring 4.3, several annotations have been composed from the @RequestMapping meta-annotation, such as:
+
+| Composed annotation | Short for |
+--- | ---
+@GetMapping | @RequestMapping(method = RequestMethod.GET)
+@PostMapping | @RequestMapping(method = RequestMethod.POST)
+@PutMapping | @RequestMapping(method = RequestMethod.PUT)
+@DeleteMapping | @RequestMapping(method = RequestMethod.DELETE)
 
 ### Is `@Controller` a stereotype? Is `@RestController` a stereotype?
 `@Controller` is a stereotype, but `@RestController` is not, because the `@RestController` implicitly adds the 
 `@ResponseBody` annotation to all methods annotated with `@RequestMapping`, while stereotypes should not differ in behavior.
 
 ### What is the difference between `@Controller` and `@RestController`?
-see previous question
+@RestController is a composed annotation of the @Controller meta-annotaion, which is visible in the source code of the @RestController:
+
+```java
+...
+@Controller < --- A rest controller is a controller
+@ResponseBody <--- A rest controller has a ResponseBody annotation on class level
+public @interface RestController { ... }
+```
+
+The real difference is caused by the @ResponseBody annotation added to the @RestController:
+
+- If a controller(method) does not have the @ResponseBody annotation, the return object is forwarded to the `ViewResolver`, which will resolve the appropriate view according to the object returned.
+- If a controller(method) has the @ResponseBody annotation, Spring loops through all registered `HTTPMessageConverters` seeking the first that fits the given mime type and class, and then uses it for the actual conversion of the object to be returned.
 
 ### When do you need `@ResponseBody`?
 If the returned value of a controller method is the actual response body instead of a logical view name the `@ResponseBody` 
 is needed. This also takes care of automatic marshalling if a converter is available.
 
 ### What does `@PathVariable` do?
-`@PathVariable` extracts a part of the `@RequestMapping` path as method argument for use in the implemented logic.
+`@PathVariable` extracts a part of the `@RequestMapping` path as method argument for use in the implemented logic:
+
+```java
+@GetMapping(" /user/{userId}")
+public String getUser(@PathVariable String userId) { ... }
+
+// The method parameter can have a different name:
+@GetMapping(" /user/{someOtherName}")
+public String getUser(@PathVariable("someOtherName") String userId) { ... }
+
+```
 
 ### What is the HTTP status return code for a successful DELETE statement?
+There are no strict rules on which HTTP status code is the correct one for each method. In general, a 2xx (request was successful) is returned. For example:
+- 204: No content
+- 202: Accepted
+- 200: OK
 
 ### What does CRUD mean?
 Create, Read (Retrieve), Update, Delete (Destroy)
