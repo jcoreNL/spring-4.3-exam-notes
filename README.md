@@ -57,9 +57,9 @@ The application-context (see last question) represents the Spring Inversion of C
     An example of a `BeanFactoryPostProcessor` is the `PropertySourcesPlaceholderConfigurer`, which resolves ${...} placeholders and @Value annotations. `BeanFactoryPostProcessor` beans will need to be declared static in order to avoid messing up bean *instances* (as they can only modify bean definitions).
 
   - **Instantiate beans & call setters on each bean**: Each bean is eagerly instantiated in the order of the dependencies needed to be injected, unless marked as `@Lazy`. Then, the bean's setters are called.
-  
+
   - **Bean post processors**:
-  After the beans have been instatiated and their setters have been called, each bean is post processed using the BeanPostProcessor beans. `BeanPostProcessor` beans can modify the beans in any way. The `BeanPostProcessor` interface has two methods:
+  After the beans have been instatiated and their setters have been called, each bean is post processed using the `BeanPostProcessor` beans. `BeanPostProcessor` beans can modify the beans in any way. The `BeanPostProcessor` interface has two methods:
 
     ```java
     public interface BeanPostProcessor {
@@ -67,9 +67,10 @@ The application-context (see last question) represents the Spring Inversion of C
         default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException { ... }
     }
     ```
+    
     The methods `postProcessBeforeInitialization` and `postProcessAfterInitialization` run before and after the bean initialization respectively. During the post processor phase, the methods annotated with `@PostConstruct` are called, followed by the `InitializingBean.afterPropertiesSet()` method and concluded with the init-method.
   
-  - _Bean is ready for use_
+  - **_Bean is ready for use_**
 
 - Use
   - Use the fully instantiated bean.
@@ -77,29 +78,29 @@ The application-context (see last question) represents the Spring Inversion of C
 - Destruction
   - When the `ApplicationContext` is closed, the beans are being destroyed. For each bean the destroy method is called. There are several ways to define a destroy method:
 
-  On the bean itself:
-  ```java
-  public class someBean() {
-      @PreDestroy
-      public void preDestroyMethod() { ... }
-  }
-  ```
+    On the bean itself:
+    ```java
+    public class someBean() {
+        @PreDestroy
+        public void preDestroyMethod() { ... }
+    }
+    ```
 
-  Using JavaConfig:
-  ```java
-  @Configuration
-  public class someConfig {
-      @Bean(destroyMethodName="preDestroyMethod")
-      public SomeBean someBean() { return new SomeBean(); }
-  }
-  ```
+    Using JavaConfig:
+    ```java
+    @Configuration
+    public class someConfig {
+        @Bean(destroyMethodName="preDestroyMethod")
+        public SomeBean someBean() { return new SomeBean(); }
+    }
+    ```
 
-  In XML:
-  ```xml
-  <bean id="someBean" class="nl.package.SomeBean" destroy-method="preDestroyMethod"></bean>
-  ```
+    In XML:
+    ```xml
+    <bean id="someBean" class="nl.package.SomeBean" destroy-method="preDestroyMethod"></bean>
+    ```
 
-  After each bean has been destroyed, the `ApplicationContext` destroys itself.
+  - After each bean has been destroyed, the `ApplicationContext` destroys itself.
 
 ### How do you use dependency injection using Java configuration
 
