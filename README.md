@@ -56,18 +56,18 @@ The application-context (see last question) represents the Spring Inversion of C
     ```
     An example of a `BeanFactoryPostProcessor` is the `PropertySourcesPlaceholderConfigurer`, which resolves ${...} placeholders and @Value annotations. `BeanFactoryPostProcessor` beans will need to be declared static in order to avoid messing up bean *instances* (as they can only modify bean definitions).
 
-  - **Instantiate beans & call setters on each bean**: Each bean is eagerly instantiated in the order of the dependencies needed to be injected, unless marked as `@Lazy`. Then, the bean's setters are called. After all properties have been set, the BeanFactory invokes the afterPropertiesSet() method.
+  - **Instantiate beans & call setters on each bean**: Each bean is eagerly instantiated in the order of the dependencies needed to be injected, unless marked as `@Lazy`. Then, the bean's setters are called.
   
   - **Bean post processors**:
   After the beans have been instatiated and their setters have been called, each bean is post processed using the BeanPostProcessor beans. `BeanPostProcessor` beans can modify the beans in any way. The `BeanPostProcessor` interface has two methods:
 
     ```java
     public interface BeanPostProcessor {
-        default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { ...  }
+        default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { ... }
         default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException { ... }
     }
     ```
-    The methods `postProcessBeforeInitialization` and `postProcessAfterInitialization` run before and after the bean initialization respectively. During the post processor phase, the methods annotated with `@PostConstruct` are called.
+    The methods `postProcessBeforeInitialization` and `postProcessAfterInitialization` run before and after the bean initialization respectively. During the post processor phase, the methods annotated with `@PostConstruct` are called, followed by the `InitializingBean.afterPropertiesSet()` method and concluded with the init-method.
   
   - _Bean is ready for use_
 
