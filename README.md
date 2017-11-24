@@ -233,6 +233,18 @@ Create an application-context:
 The `@Bean` annotation registers a Spring bean which can be registered in the application context 
 
 ### How are you going to create an ApplicationContext in an integration test or a JUnit test?
+```java
+@RunWith(SpringRunner.class)
+@ContextConfiguration(classes = Config.class)
+public class SomeTestClass { .. . }
+```
+
+**Spring boot:**
+```java
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes=TestApplicationContext.class)
+public class SomeTestClass {
+```
 
 ### What do you have to do, if you would like to inject something into a private field?
 Spring injects fields annotated with `@Autowired` through reflection. This also works for private fields so no extra 
