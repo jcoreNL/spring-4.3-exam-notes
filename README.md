@@ -42,9 +42,64 @@ Create an application-context:
 `ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/application-context.xml");`
 
 ### What is the concept of a “container” and what is its lifecycle?
-The application-context (see last question) represents the Spring Inversion of Control Container. 
+The application-context (see last question) represents the Spring Inversion of Control Container. It contains of the three phases initialization, use and destroy:
 
-**Todo: container lifecycle?**
+- Initialization
+  - **Load bean definitions**: Process `@Configuration` classes, parse `XML` config and scan for `@Component` classes. Add the bean definitions to the `BeanFactory`.
+
+  - **Post process bean definitions**: `BeanFactoryPostProcessor` beans are invoked to BeanFactoryPostProcessor apply transformations to bean _definitions_ (before the objects are actually created). A custom `BeanFactoryPostProcessor` can be created by implementing the interface:
+
+    ```java
+    public interface BeanFactoryPostProcessor {
+        void postProcessBeanFactory(ConfigurableListableBeanFactory var1) throws BeansException;
+    }
+    ```
+    An example of a `BeanFactoryPostProcessor` is the `PropertySourcesPlaceholderConfigurer`, which resolves ${...} placeholders and @Value annotations. `BeanFactoryPostProcessor` beans will need to be declared static in order to avoid messing up bean *instances* (as they can only modify bean definitions).
+
+  - **Instantiate beans & call setters on each bean**: Each bean is eagerly instantiated in the order of the dependencies needed to be injected, unless marked as `@Lazy`. Then, the bean's setters are called. After all properties have been set, the BeanFactory invokes the afterPropertiesSet() method.
+  
+  - **Bean post processors**:
+  After the beans have been instatiated and their setters have been called, each bean is post processed using the BeanPostProcessor beans. `BeanPostProcessor` beans can modify the beans in any way. The `BeanPostProcessor` interface has two methods:
+
+    ```java
+    public interface BeanPostProcessor {
+        default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { ...  }
+        default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException { ... }
+    }
+    ```
+    The methods `postProcessBeforeInitialization` and `postProcessAfterInitialization` run before and after the bean initialization respectively. During the post processor phase, the methods annotated with `@PostConstruct` are called.
+  
+  - _Bean is ready for use_
+
+- Use
+  - Use the fully instantiated bean.
+
+- Destruction
+  - When the `ApplicationContext` is closed, the beans are being destroyed. For each bean the destroy method is called. There are several ways to define a destroy method:
+
+  On the bean itself:
+  ```java
+  public class someBean() {
+      @PreDestroy
+      public void preDestroyMethod() { ... }
+  }
+  ```
+
+  Using JavaConfig:
+  ```java
+  @Configuration
+  public class someConfig {
+      @Bean(destroyMethodName="preDestroyMethod")
+      public SomeBean someBean() { return new SomeBean(); }
+  }
+  ```
+
+  In XML:
+  ```xml
+  <bean id="someBean" class="nl.package.SomeBean" destroy-method="preDestroyMethod"></bean>
+  ```
+
+  After each bean has been destroyed, the `ApplicationContext` destroys itself.
 
 ### How do you use dependency injection using Java configuration
 
@@ -97,9 +152,7 @@ The destroy method on a bean is called just before the bean lifecycle ends. More
 ### What is a BeanFactoryPostProcessor and what is it used for?
 Allows for custom modification of an application context's bean definitions, adapting the bean property values of the 
 context's underlying bean factory.  
-A BeanFactoryPostProcessor may interact with and modify bean definitions, but never bean instances. 
-Doing so may cause premature bean instantiation, violating the container and causing unintended side-effects. 
-If bean instance interaction is required, consider implementing BeanPostProcessor instead.
+A BeanFactoryPostProcessor may interact with and modify bean definitions, but never bean instances. Doing so may cause premature bean instantiation, violating the container and causing unintended side-effects. Therefore, `BeanFactoryPostProcessor` beans will need to be declared static. If bean instance interaction is required, consider implementing BeanPostProcessor instead.
 
 ### What is a BeanPostProcessor and how is the difference to a BeanFactoryPostProcessor? What do they do? When are they called?
 Factory hook that allows for custom modification of new bean instances, e.g. checking for marker interfaces or wrapping 
@@ -801,10 +854,11 @@ The @RequestMapping annotation is used for mapping web requests onto specific ha
 
 | Composed annotation | Short for |
 --- | ---
-@GetMapping | @RequestMapping(method = RequestMethod.GET)
-@PostMapping | @RequestMapping(method = RequestMethod.POST)
-@PutMapping | @RequestMapping(method = RequestMethod.PUT)
+@GetMapping    | @RequestMapping(method = RequestMethod.GET)
+@PostMapping   | @RequestMapping(method = RequestMethod.POST)
+@PutMapping    | @RequestMapping(method = RequestMethod.PUT)
 @DeleteMapping | @RequestMapping(method = RequestMethod.DELETE)
+@PatchMapping  | @RequestMapping(method = RequestMethod.PATCH)
 
 ### Is `@Controller` a stereotype? Is `@RestController` a stereotype?
 `@Controller` is a stereotype, but `@RestController` is not, because the `@RestController` implicitly adds the 
