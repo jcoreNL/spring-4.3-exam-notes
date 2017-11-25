@@ -816,6 +816,7 @@ Authentication is checking who you are. Authorization is checking what you can d
 The `@PreAuthorize`, `@PostAuthorize`, `@PreFilter` and `@PostFilter` annotations allows for SpEL arguments.
 
 ### Does Spring Security support password hashing? What is salting?
+Yes, Spring Security supports password hashing. Salting is adding a random String to the password to increase the difficulty of brute forcing to crack the password hash.
 
 ## REST
 
@@ -895,6 +896,7 @@ The real difference is caused by the @ResponseBody annotation added to the @Rest
 ### When do you need `@ResponseBody`?
 If the returned value of a controller method is the actual response body instead of a logical view name the `@ResponseBody` 
 is needed. This also takes care of automatic marshalling if a converter is available.
+On a GET-method it isnt mandatary.
 
 ### What does `@PathVariable` do?
 `@PathVariable` extracts a part of the `@RequestMapping` path as method argument for use in the implemented logic:
@@ -921,8 +923,10 @@ Create, Read (Retrieve), Update, Delete (Destroy)
 REST is not a specific web service but a design concept (architecture) for managing state information. Therefore, REST by itself does not provide any form of security. To secure a REST service, several security protocols (such as OAuth 2.0 and TLS) are available. On an applicational level, Spring Security can be considered.
 
 ### Where do you need `@EnableWebMVC`?
+You use it on the config.
 
 ### Name some common http response codes. When do you need `@ResponseStatus`?
+When the method returns void. Because for example the body has no-content or when you dont want to return aan view-name.
 
 ### Does REST work with transport layer security (TLS)?
 Yes. Transport Layer Security can encrypt the communication to a RESTful Webservice and authenticate the server to a client.
