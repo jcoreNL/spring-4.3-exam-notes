@@ -107,6 +107,7 @@ The application-context (see last question) represents the Spring Inversion of C
 ### How do you use dependency injection in XML, using constructor or setter injection
 
 ### How do you use dependency injection using annotations (`@Component`,`@Autowired`)
+Adding @Autowired on either fields, the constructor or methods.
 
 ### What is Component scanning
 Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations and add them to the bean definitions dynamically.
