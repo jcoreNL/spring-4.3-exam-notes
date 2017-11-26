@@ -103,6 +103,21 @@ The application-context (see last question) represents the Spring Inversion of C
   - After each bean has been destroyed, the `ApplicationContext` destroys itself.
 
 ### How do you use dependency injection using Java configuration
+Classes with bean declarations (`@Bean`) should be annotated with `@Configuration`. Example:
+```java
+@Configuration
+public class AppConfig {
+  @Bean
+  public SomeService someBean() {
+    return new SomeServiceImpl(someRepository); // DI someRepository
+  }
+
+  @Bean
+  public SomeRepository someRepository() {
+    return new SomeRepository();
+  }
+}
+```
 
 ### How do you use dependency injection in XML, using constructor or setter injection
 
@@ -748,10 +763,15 @@ Singleton.
 ## Security
 
 ### What is the delegating filter proxy?
-`DelegatingFilterProxy` is a chain of Spring configured security filters.
+The `DelegatingFilterProxy` is a proxy for a standard Servlet Filter, delegating to a Spring-managed bean that implements the Filter interface. 
 
 ### What is the security filter chain?
-The instance of the `DelegatingFilterProxy` **must** be called `springSecurityFilterChain`. _(see previous question)_
+It's a chain of Spring configured filters. It requires an instance of the `DelegatingFilterProxy` which **must** be called `springSecurityFilterChain`. _(see previous question)_ 
+For setting up this chain, either:
+
+- use Sprint Boot: does it automatically
+- use `@EnableWebSecurity`
+- declare a `<filter>` in web.xml
 
 ### In the notes several predefined filters were shown. What do they do and what order do they occur in?
 - `SecurityContextPersistenceFilter`: Creates and manages the security context 
@@ -796,8 +816,12 @@ protected void configure(HttpSecurity http) throws Exception {
 ```
 
 ### Why do you need method security? What type of object is typically secured at the method level (think of its purpose not its Java type).
+To secure a resource.
 
 ### Is security a cross cutting concern? How is it implemented internally?
+Yes, and Spring Security uses AOP for security at the method level. It uses annotations (either Spring or JSR-250) and Java configuration to activate detection of annotations.
+**JSR-250 annotations** (`@RolesAllowed`) should be enabled (`@EnableGlobalMethodSecurity(jsr250Enabled=true)`).
+**Secured annotations** (`@Secured`) should be enabled (`@EnableGlobalMethodSecurity(securedEnabled=true)`). SpEL is NOT supported.
 
 ### What do `@Secured` and `@RolesAllowed` do? What is the difference between them?
 - `@RolesAllowed` is a JSR-250 annotation which only allows method security based on roles.
@@ -811,18 +835,35 @@ Intercept-URL patterns are always evaluated in the order they are defined. Thus 
 ### How is a Principal defined?
 
 ### What is authentication and authorization? Which must come first?
-Authentication is checking who you are. Authorization is checking what you can do/see based on who you are.
+Authentication is checking who you are (i.e. login), which must come first. Default config is using a DAO Authentication 
+provider, which expects a `UserDetailsService` implementation. You can write a custom implementation or use a built-in 
+implementations (which use `UserDetailsManagerConfigurer`):
+
+- in-memory (properties)
+- JDBC (database)
+- LDAP
+
+You can also define your own Authentication provider.
+Authorization is checking what you can do/see based on who you are.
 
 ### In which security annotation are you allowed to use SpEL?
 The `@PreAuthorize`, `@PostAuthorize`, `@PreFilter` and `@PostFilter` annotations allows for SpEL arguments.
+To activate Pre/Post annotations: `@EnableGlobalMethodSecurity(prePostEnabled=true)`.
 
 ### Does Spring Security support password hashing? What is salting?
-Yes, Spring Security supports password hashing. Salting is adding a random String to the password to increase the difficulty of brute forcing to crack the password hash.
+Yes, they support SHA-256 (`StandardPasswordEncoder`), md5 (`Md5PasswordEncoder`), bcrypt (`BCryptPasswordEncoder`, preferred), and some more.
+Salting is securing passwords using a well-known string. It makes brute force attacks harder. Salting example:
+```java
+auth.jdbcAuthentication()
+  .dataSource(dataSource)
+  .passwordEncoder(new StandardPasswordEncoder("sodium-chloride"));
+```
+
 
 ## REST
 
 ### What does REST stand for?
-Representational state transfer
+REpresentational State Transfer
 
 ### What is a resource?
 The fundamental concept in any RESTful API is the resource. A resource is an object with a type, associated data, 
@@ -839,9 +880,21 @@ different representation.
 
 ### What are idempotent operations? Why is idempotency important?
 An idempotent HTTP method is a HTTP method that can be called many times without different outcomes. It would not matter 
-if the method is called only once, or ten times over. The result should be the same. Again, this only applies to the result, 
-not the resource itself. This still can be manipulated (like an update-timestamp, provided this information is not shared 
-in the (current) resource representation.
+if the method is called only once, or ten times over. The result should be the same. Again, this only applies to the 
+result, not the resource itself. This still can be manipulated (like an update-timestamp, provided this information is 
+not shared in the (current) resource representation.
+
+***Overview of HTTP methods***
+
+HTTP Method | Idempotent | Safe
+------------|------------|--------
+OPTIONS     | yes        | yes
+GET         | yes        | yes
+HEAD        | yes        | yes
+PUT         | yes        | no
+POST        | no         | no
+DELETE      | yes        | no
+PATCH       | no         | no
 
 ### Is REST scalable and/or interoperable?
 Yes, REST is scalable because it is stateless.
@@ -897,7 +950,7 @@ The real difference is caused by the @ResponseBody annotation added to the @Rest
 ### When do you need `@ResponseBody`?
 If the returned value of a controller method is the actual response body instead of a logical view name the `@ResponseBody` 
 is needed. This also takes care of automatic marshalling if a converter is available.
-On a GET-method it isnt mandatary.
+On a GET-method it isn't mandatary when the class is annotated with `@RestController`.
 
 ### What does `@PathVariable` do?
 `@PathVariable` extracts a part of the `@RequestMapping` path as method argument for use in the implemented logic:
@@ -987,6 +1040,41 @@ This allows users to immediately start with implementing business logic, because
 these dependencies.
 
 ### Spring Boot supports both Java properties and YML files. What do they look like and how do they work?
+It's recommended to use property files to define defaults, and override them using either: command line arguments, java system properties, and/or OS environment variables. Properties are accessed using `@Value` or use `@ConfigurationProperties` to create a dedicated container bean. Example:
+`@ConfigurationProperties(prefix="rewards.client")`
+You can override the name of the file with:
+```java
+public class Application {
+  public static void main(String[] args) {
+    // to use myserver.properties or myserver.yml
+    System.setProperty("spring.config.name", "myserver");
+    SpringApplication.run(Application.class, args);
+  }
+}
+```
+
+application.properties example:
+```
+database.host = localhost
+database.user = admin
+```
+
+Spring Boot looks for application.properties or application.yml in these locations (in this order):
+1. /config sub-dir
+2. working dir
+3. config package in classpath
+4. classpath root
+A PropertiesPropertySourceLoader or YamlPropertySourceLoader are used to load the files. Thereafter a PropertySource is created. 
+
+application.yml example:
+```
+database:
+  host: localhost
+  user: admin
+```
+
+YML: YAML Ain't Markup Language. A Java parser (SnakeYAML) is used to parse the file. It's provided by spring-boot-starters and must be on the classpath. Multiple profiles can be defined in one YML-file. They are seperated by three stripes: --- 
+It is convenient for hierarchical configuration data.
 
 ### Can you control logging with Spring Boot? How?
 The logging level can be set per package through property files.
@@ -1001,14 +1089,14 @@ logging.level.com.mycompany.mypackage=INFO
 
 ### What is a microservices architecture?
 A microservice architecture is an architectural style that structures an application as a collection of loosely coupled 
-services, which implement business capabilities.
+services, which implement business capabilities. A microservice should deal with a single view of data (tight cohesion).
 
 ### What are the advantages and disadvantages of microservices?
 **Advantages:** 
 - Possibility to scale individual parts of the application
 - Reusability of services for multiple end goals
 - Microservices can be individually developed more easily
-- Possibility to use a different language and datastore for each service
+- Technology diversity: possibility to use a different language and datastore for each service
 - Individual parts of the application can have their own release cycle
 
 **Disadvantages:** 
