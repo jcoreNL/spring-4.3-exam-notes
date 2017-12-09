@@ -236,14 +236,14 @@ constructor or method. For constructors and methods the dependency needs to be a
 - methods with arbitrary names and/or multiple arguments
 - fields (& mix with constructors)
 - field or method that expects an array of a type if one or more beans of this particular type exist:
-``` java
+```java
 public class MovieRecommender {
     @Autowired
     private MovieCatalog[] movieCatalogs;
 }
 ```
 - same for typed collections:
-``` java
+```java
 public class MovieRecommender {
     private Set<MovieCatalog> movieCatalogs;
     @Autowired
@@ -690,7 +690,17 @@ Both  @EnableTransactionManagement and `<tx:annotation-driven/>` are responsible
 
 ### What does transaction propagation mean?
 Transaction propagation is the way transactions act if another transaction has to be started during a transaction. 
-The new transaction can either be embedded or the current transaction will be used for this transaction.
+The new transaction can either be embedded or the current transaction will be used for this transaction. Spring supports several propagation types ([source](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Propagation.html)):
+
+| Propagation type | What if no transaction yet exists? | What if another transaction already exists? |
+| --- | --- | --- |
+| REQUIRED (default) | Create new transaction and use it | Join transaction |
+| REQUIRES_NEW | Create new transaction and use it | Halt previous transaction; create new transaction and use it; resume previous transaction |
+| NOT_SUPPORTED | Halt transaction; run outside transaction; resume transaction |
+| SUPPORTS | Do nothing special | Join transaction |
+| MANDATORY | Join transaction | throw a `TransactionRequiredException` | 
+| NEVER | Do nothing special | Throw an exception |
+
 
 ### What happens if one `@Transactional` annotated method is calling another `@Transactional` annotated method on the same object instance?
 By default the propagation type is `Propagation.REQUIRED`, which uses the current transaction for any new transactions. 
