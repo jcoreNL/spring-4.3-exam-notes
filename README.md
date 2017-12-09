@@ -17,7 +17,7 @@ Remember: Unless a question explicitly references Spring Boot you can assume Spr
 ### What is dependency injection and what are the advantages?
 Dependency injection is a technique whereby one object supplies the dependencies of another object. A dependency is an 
 object that can be used (a service). An injection is the passing of a dependency to a dependent object (a client) that 
-would use it. The service is made part of the client's state.[1] Passing the service to the client, rather than 
+would use it. The service is made part of the client's state. Passing the service to the client, rather than 
 allowing a client to build or find the service, is the fundamental requirement of the pattern.
  
 ### What is an interface and what are the advantages of making use of them in Java?
@@ -56,7 +56,7 @@ The application-context (see last question) represents the Spring Inversion of C
     ```
     An example of a `BeanFactoryPostProcessor` is the `PropertySourcesPlaceholderConfigurer`, which resolves ${...} placeholders and @Value annotations. `BeanFactoryPostProcessor` beans will need to be declared static in order to avoid messing up bean *instances* (as they can only modify bean definitions).
 
-  - **Instantiate beans & call setters on each bean**: Each bean is eagerly instantiated in the order of the dependencies needed to be injected, unless marked as `@Lazy`. Then, the bean's setters are called.
+  - **Instantiate beans & call setters on each bean**: Each bean is eagerly instantiated in the order of the dependencies needed to be injected, unless marked as `@Lazy`. Then, the bean's setters are called. Annotation injection is performed before XML injection, thus the latter configuration will override the former for properties wired through both approaches.
 
   - **Bean post processors**:
   After the beans have been instatiated and their setters have been called, each bean is post processed using the `BeanPostProcessor` beans. `BeanPostProcessor` beans can modify the beans in any way. The `BeanPostProcessor` interface has two methods:
@@ -103,13 +103,41 @@ The application-context (see last question) represents the Spring Inversion of C
   - After each bean has been destroyed, the `ApplicationContext` destroys itself.
 
 ### How do you use dependency injection using Java configuration
+Classes with bean declarations (`@Bean`) should be annotated with `@Configuration`. Example:
+```java
+@Configuration
+public class AppConfig {
+  @Bean
+  public SomeService someBean() {
+    return new SomeServiceImpl(someRepository()); // DI someRepository
+  }
+
+  @Bean
+  public SomeRepository someRepository() {
+    return new SomeRepository();
+  }
+}
+```
 
 ### How do you use dependency injection in XML, using constructor or setter injection
 
 ### How do you use dependency injection using annotations (`@Component`,`@Autowired`)
+Classes annotated with `@Component` can be injected by using `@Autowired`. You can apply this annotation in multiple ways, see [more about autwired](#autowired) 
 
 ### What is Component scanning
-Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations and add them to the bean definitions dynamically.
+Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations and add them to the bean definitions dynamically. To enable component scanning:
+
+- in XML: `<context:component-scan/>`, with base packages: `<context:component-scan base-package="com.one,com.two"/>`
+- in Java: 
+```java
+@Configuration
+@ComponentScan // search in specific packages optionally, add (basePackages={"com.one", "com.two"})
+public class AppConfig {
+  ..
+}
+```
+
+The use of `<context:component-scan>` implicitly enables the functionality of `<context:annotation-config>`. There is usually no need to include the `<context:annotation-config>` element when using `<context:component-scan>`.
 
 ### What are Stereotypes and Meta-Annotations
 Stereotypes are annotations denoting the roles of types or methods in the overall architecture (at a conceptual, rather than implementation, level). For instance:
@@ -133,22 +161,49 @@ request will have its own instance of a bean created off the back of a single be
 of a web-aware Spring ApplicationContext.
 - **session**: Scopes a single bean definition to the lifecycle of a HTTP Session. Only valid in the context of a 
 web-aware Spring ApplicationContext.
-- **global session**: Scopes a single bean definition to the lifecycle of a global HTTP Session. Typically only valid 
+- **globalSession**: Scopes a single bean definition to the lifecycle of a global HTTP Session. Typically only valid 
 when used in a portlet context. Only valid in the context of a web-aware Spring ApplicationContext.
+- **application**: Scopes a single bean definition to the lifecycle of a `ServletContext`. Only valid in the context of a web-aware Spring `ApplicationContext`. Usage also `@ApplicationScope`
+- **websocket**: Scopes a single bean definition to the lifecycle of a `WebSocket`. Only valid in the context of a web-aware Spring `ApplicationContext`.
 
 ### What is an initialization method and how is it declared in a Spring bean?
 The initialization method on a bean is called after all injections are complete. More precisely after the injections 
-`@PostConstruct` is called, followed by the `InitializingBean.afterPropertiesSet()` method and concluded with the init-method.
+`@PostConstruct` is called, followed by the `InitializingBean.afterPropertiesSet()` (same as `init-method` in XML) and concluded with a custom `init()`.
 
 - **xml declaration**: `<bean id="myBean" class="com.example.MyBean" init-method="initMethodName" />`
 - **java/annotation declaration**: ` @Bean(initMethod = "initMethodName")`
+- **implement `InitializingBean` interface** and implement `afterPropertiesSet()` (not recommended because it couples code to Spring)
+- **custom init()**: 
+```java
+public class DefaultBlogService implements BlogService {
+    private BlogDao blogDao;
+    public void setBlogDao(BlogDao blogDao) {
+        this.blogDao = blogDao;
+    }
+    // this is (unsurprisingly) the initialization callback method
+    public void init() {
+        if (this.blogDao == null) {
+            throw new IllegalStateException("The [blogDao] property must be set.");
+        }
+    }
+}
+```
+```xml
+<beans default-init-method="init">
+    <bean id="blogService" class="com.foo.DefaultBlogService">
+        <property name="blogDao" ref="blogDao" />
+    </bean>
+</beans>
+```
 
 ### What is a destroy method, how is it declared and when is it called?
 The destroy method on a bean is called just before the bean lifecycle ends. More precisely first
-`@PreDestroy` is called, followed by the `DisposableBean.destroy()` method and concluded with the destroy-method.
+`@PreDestroy` is called, followed by the `DisposableBean.destroy()` (same as `destroy-method` in XML) and concluded with a custom `destroy()`.
 
 - **xml declaration**: `<bean id="myBean" class="com.example.MyBean" destroy-method="destroyMethodName" />`
 - **java/annotation declaration**: ` @Bean(destroyMethod = "destroyMethodName")`
+- **implement `DisposableBean` interface** and implement `destroy()`  (not recommended because it couples code to Spring)
+- **custom destroy()**: see previous question, but for destroy methods use: `<beans default-detroy-method="defaultDestroyBlabla">...</beans>`
 
 ### What is a BeanFactoryPostProcessor and what is it used for?
 Allows for custom modification of an application context's bean definitions, adapting the bean property values of the 
@@ -172,9 +227,38 @@ xml example: `<bean id="myBean" class="com.example.MyBean" lazy-init="true"/>`
 Spring is able to scan given packages for bean classes annotated with `@Component` or any of the Stereotype annotations 
 and add them to the bean definitions dynamically.
 
-### What is the behavior of the annotation `@Autowired` with regards to field injection, constructor injection and method injection?
+### <a name="autowired"></a>What is the behavior of the annotation `@Autowired` with regards to field injection, constructor injection and method injection?
 The `@Autowired` annotation injects an instance of an implementation of the needed class or interface into the field, 
-constructor or method. For constructors and methods the dependency needs to be an argument to that method or constructor.
+constructor or method. For constructors and methods the dependency needs to be an argument to that method or constructor. It can be used in multiple ways:
+
+- constructors (since 4.3 using `@Autowired` is no longer necessary if the target bean only defines one constructor to begin with)
+- traditional setter methods
+- methods with arbitrary names and/or multiple arguments
+- fields (& mix with constructors)
+- field or method that expects an array of a type if one or more beans of this particular type exist:
+``` java
+public class MovieRecommender {
+    @Autowired
+    private MovieCatalog[] movieCatalogs;
+}
+```
+- same for typed collections:
+``` java
+public class MovieRecommender {
+    private Set<MovieCatalog> movieCatalogs;
+    @Autowired
+    public void setMovieCatalogs(Set<MovieCatalog> movieCatalogs) {
+        this.movieCatalogs = movieCatalogs;
+    }
+}
+```
+- same for typed Maps if the key type is `String`. The Map values will contain all beans of the expected type, and the keys will contain the corresponding bean names.
+
+By default, the autowiring fails whenever zero candidate beans are available; the default behavior is to treat annotated methods, constructors, and fields as indicating required dependencies. This behavior can be changed: 
+
+- Use required param: `@Autowired(required = false)`
+- Use Java 8 optional: `Optional<beantype>`
+- Use `@Nullable` annotation
 
 ### How does the `@Qualifier` annotation complement the use of `@Autowired`?
 In case there are multiple implementations of the dependency that you are trying to autowire, Spring may not be able to 
@@ -226,6 +310,8 @@ Create an application-context:
 
 
 ### What is a prefix?
+A prefix can be `file:`, `classpath:`, or `http:`.
+Wildcard for classpath = `classpath*:`: this special prefix specifies that all classpath resources that match the given name must be obtained
 
 ### What is the lifecycle on an ApplicationContext?
 
@@ -236,14 +322,14 @@ The `@Bean` annotation registers a Spring bean which can be registered in the ap
 ```java
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = Config.class)
-public class SomeTestClass { .. . }
+public class SomeTestClass { ... }
 ```
 
 **Spring boot:**
 ```java
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes=TestApplicationContext.class)
-public class SomeTestClass {
+public class SomeTestClass { ... }
 ```
 
 ### What do you have to do, if you would like to inject something into a private field?
@@ -297,6 +383,7 @@ with final methods.
 ### What is the preferred way to close an application context?
 
 ### How can you create a shared application context in a JUnit test?
+By sharing the same configuration.
 
 ### What does a static `@Bean` method do?
 `@Bean` annotated methods are proxied using CGLIB through inheritance. Static methods cannot be overridden which means 
@@ -308,6 +395,12 @@ call which is not the expected singleton behavior.
 ### What is a namespace used for in XML configuration
 
 ### What are the <context/> elements covered in the course and what do they do?
+- `<property-placeholder/>`
+- `<annotation-config/>`
+- `<component-scan/>`
+- `<load-time-weaver/>`
+- `<spring-configured/>`
+- `<mbean-export/>`
 
 ### What is `@Value` used for?
 
@@ -359,15 +452,15 @@ Spring uses proxies to add cross cutting concern logic to a bean in a dynamic wa
 ### How many advice types does Spring support. What are they used for?
 - **before**: Run advice before the method execution. 	
 - **after**: Run advice after the method execution, regardless of its outcome.
-- **after**-returning: Run advice after the method execution, only if the method completes successfully.	
+- **after-returning**: Run advice after the method execution, only if the method completes successfully.	
 - **after-throwing**: Run advice after the method execution, only if the method exits by throwing an exception.
 - **around**: Run advice before and after the advised method is invoked.
 
 ### What do you have to do to enable the detection of the `@Aspect` annotation?
-Add _aspectjweaver.jar_ and _aspectjrt.jar_ to the classpath.
+Add _aspectjweaver.jar_ to the classpath.
 
 **xml:** add `<aop:aspectj-autoproxy />` to configuration
-**java:** add `@AspectJAutoProxy` to configuration
+**java:** add `@EnableAspectJAutoProxy` to configuration
 
 ### Name three typical cross cutting concerns.
 - Transaction Management
@@ -464,7 +557,7 @@ to either proceed or not proceed with the original method call.
 ### What are the five advice types called?
 - **before**: Run advice before the method execution. 	
 - **after**: Run advice after the method execution, regardless of its outcome.
-- **after**-returning: Run advice after the method execution, only if the method completes successfully.	
+- **after-returning**: Run advice after the method execution, only if the method completes successfully.	
 - **after-throwing**: Run advice after the method execution, only if the method exits by throwing an exception.
 - **around**: Run advice before and after the advised method is invoked.
 
@@ -490,6 +583,7 @@ to more general DataAccessException subclasses which are consistent across all s
 The `EmbeddedDatabaseBuilder` is ideal for creating an embedded development/test `DataSource`
 
 For xml configuration the `<jdbc:embedded-database>` element can be used.
+
 ### What is the Template design pattern and what is the JDBC template?
 In the template design pattern, an abstract class exposes defined way(s)/template(s) to execute its methods. It defines the outline or skeleton of an algorithm.
 
@@ -513,6 +607,17 @@ public abstract class Game {
 
 ### What is a callback? What are the three JdbcTemplate callback interfaces described in the notes? What are they used for?
 _(You would not have to remember the interface names in the exam, but you should know what they do if you see them in a code sample)._
+- **RowMapper** interface: for mapping a single row of a ResultSet to an object
+  - One method: T mapRow(ResultSet rs, int rowNum) throws SQLException; 
+  - No need to cast
+  - Since lambda expression: code can be inline
+- **RowCallbackHandler** interface: when there's no return object (streaming to a file of XML)
+  - one method: void processRow(ResultSet rs) throws SQLException;
+  - if no state needed → can use a lambda, but need to cast
+- **ResultSetExtractor** interface: for processing an entire ResultSet at once
+  - one method: T extractData(ResultSet rs) throws SQLException, DataAccesException; 
+  - you are responsible for iterating e.g. for mapping entire ResultSet to single object
+  - can use lambda, also need to cast
 
 ### Can you execute a plain SQL statement with the JDBC template?
 Yes, SQL queries can be passed to the multiple query methods of the JDBC template.
@@ -550,7 +655,7 @@ The `PlatformTransactionManager` is an abstraction layer which hides the impleme
 specific transaction handling.
 
 ### What is the TransactionTemplate? Why would you use it?
-The TransactionTemlate is a helper class that simplifies programmatic transaction demarcation and transaction exception handling. It uses callback methods for executing some operations in a transaction. That is achieved by anonymous classes build on the TransactionCallback callback interface. 
+The TransactionTemplate is a helper class that simplifies programmatic transaction demarcation and transaction exception handling. It uses callback methods for executing some operations in a transaction. That is achieved by anonymous classes build on the TransactionCallback callback interface. 
 
 ```java
 TransactionTemplate tt = new TransactionTemplate(transactionManager);
@@ -570,6 +675,13 @@ Transaction isolation levels set the access concurrent transactions have to chan
 - `REPEATABLE_READ`: Does not allow dirty reads. Non-repeatable reads are prevented: reading a row twice in one transaction 
 will have same result.
 - `SERIALIZABLE`: Does not allow dirty reads and non-repeatable reads. Also prevents phantom reads.
+
+| isolation level | dirty reads | non-repeatable reads | phantom reads |
+|---|---|---|---|
+| `READ_UNCOMMITTED` | yes | yes | yes |
+| `READ_COMMITTED`   | no  | yes | yes |
+| `REPEATABLE_READ`  | no  | no  | yes |
+| `SERIALIZABLE`     | no  | no  | no  |
 
 ### What is the difference between `@EnableTransactionManagement` and `<tx:annotation-driven>`?
 Both  @EnableTransactionManagement and `<tx:annotation-driven/>` are responsible for registering the necessary Spring components that power annotation-driven transaction management. Both have the attribute transactionManager / transaction-manager="". The difference is that, if the attribute is not explicitly set, `<tx:annotation-driven/>` is hard-wired to look for a bean _named_ "transactionManager" by default, while the @EnableTransactionManagement is will fall back to a _by-type_ lookup for any PlatformTransactionManager bean in the container.
@@ -747,10 +859,15 @@ Singleton.
 ## Security
 
 ### What is the delegating filter proxy?
-`DelegatingFilterProxy` is a chain of Spring configured security filters.
+The `DelegatingFilterProxy` is a proxy for a standard Servlet Filter, delegating to a Spring-managed bean that implements the Filter interface. 
 
 ### What is the security filter chain?
-The instance of the `DelegatingFilterProxy` **must** be called `springSecurityFilterChain`. _(see previous question)_
+It's a chain of Spring configured filters. It requires an instance of the `DelegatingFilterProxy` which **must** be called `springSecurityFilterChain`. _(see previous question)_ 
+For setting up this chain, either:
+
+- use Sprint Boot: does it automatically
+- use `@EnableWebSecurity`
+- declare a `<filter>` in web.xml
 
 ### In the notes several predefined filters were shown. What do they do and what order do they occur in?
 - `SecurityContextPersistenceFilter`: Creates and manages the security context 
@@ -795,14 +912,19 @@ protected void configure(HttpSecurity http) throws Exception {
 ```
 
 ### Why do you need method security? What type of object is typically secured at the method level (think of its purpose not its Java type).
+To secure a resource.
 
 ### Is security a cross cutting concern? How is it implemented internally?
+Yes, and Spring Security uses AOP for security at the method level. It uses annotations (either Spring or JSR-250) and Java configuration to activate detection of annotations.
+**JSR-250 annotations** (`@RolesAllowed`) should be enabled (`@EnableGlobalMethodSecurity(jsr250Enabled=true)`).
+**Secured annotations** (`@Secured`) should be enabled (`@EnableGlobalMethodSecurity(securedEnabled=true)`). SpEL is NOT supported.
 
 ### What do `@Secured` and `@RolesAllowed` do? What is the difference between them?
 - `@RolesAllowed` is a JSR-250 annotation which only allows method security based on roles.
 - `@Secured` allows for some extra security options on top of role-based security.
 
 ### What is a security context?
+The most fundamental object is SecurityContextHolder. This is where we store details of the present security context of the application, which includes details of the principal currently using the application. By default the SecurityContextHolder uses a ThreadLocal to store these details, which means that the security context is always available to methods in the same thread of execution, even if the security context is not explicitly passed around as an argument to those methods. Using a ThreadLocal in this way is quite safe if care is taken to clear the thread after the present principal’s request is processed. Of course, Spring Security takes care of this for you automatically so there is no need to worry about it.
 
 ### In which order do you have to write multiple intercept-url's?
 Intercept-URL patterns are always evaluated in the order they are defined. Thus it is important that more specific patterns are defined higher in the list than less specific patterns. 
@@ -810,17 +932,35 @@ Intercept-URL patterns are always evaluated in the order they are defined. Thus 
 ### How is a Principal defined?
 
 ### What is authentication and authorization? Which must come first?
-Authentication is checking who you are. Authorization is checking what you can do/see based on who you are.
+Authentication is checking who you are (i.e. login), which must come first. Default config is using a DAO Authentication 
+provider, which expects a `UserDetailsService` implementation. You can write a custom implementation or use a built-in 
+implementations (which use `UserDetailsManagerConfigurer`):
+
+- in-memory (properties)
+- JDBC (database)
+- LDAP
+
+You can also define your own Authentication provider.
+Authorization is checking what you can do/see based on who you are.
 
 ### In which security annotation are you allowed to use SpEL?
 The `@PreAuthorize`, `@PostAuthorize`, `@PreFilter` and `@PostFilter` annotations allows for SpEL arguments.
+To activate Pre/Post annotations: `@EnableGlobalMethodSecurity(prePostEnabled=true)`.
 
 ### Does Spring Security support password hashing? What is salting?
+Yes, they support SHA-256 (`StandardPasswordEncoder`), md5 (`Md5PasswordEncoder`), bcrypt (`BCryptPasswordEncoder`, preferred), and some more.
+Salting is securing passwords using a well-known string. It makes brute force attacks harder. Salting example:
+```java
+auth.jdbcAuthentication()
+  .dataSource(dataSource)
+  .passwordEncoder(new StandardPasswordEncoder("sodium-chloride"));
+```
+
 
 ## REST
 
 ### What does REST stand for?
-Representational state transfer
+REpresentational State Transfer
 
 ### What is a resource?
 The fundamental concept in any RESTful API is the resource. A resource is an object with a type, associated data, 
@@ -837,9 +977,21 @@ different representation.
 
 ### What are idempotent operations? Why is idempotency important?
 An idempotent HTTP method is a HTTP method that can be called many times without different outcomes. It would not matter 
-if the method is called only once, or ten times over. The result should be the same. Again, this only applies to the result, 
-not the resource itself. This still can be manipulated (like an update-timestamp, provided this information is not shared 
-in the (current) resource representation.
+if the method is called only once, or ten times over. The result should be the same. Again, this only applies to the 
+result, not the resource itself. This still can be manipulated (like an update-timestamp, provided this information is 
+not shared in the (current) resource representation.
+
+***Overview of HTTP methods***
+
+HTTP Method | Idempotent | Safe
+------------|------------|--------
+OPTIONS     | yes        | yes
+GET         | yes        | yes
+HEAD        | yes        | yes
+PUT         | yes        | no
+POST        | no         | no
+DELETE      | yes        | no
+PATCH       | no         | no
 
 ### Is REST scalable and/or interoperable?
 Yes, REST is scalable because it is stateless.
@@ -895,6 +1047,7 @@ The real difference is caused by the @ResponseBody annotation added to the @Rest
 ### When do you need `@ResponseBody`?
 If the returned value of a controller method is the actual response body instead of a logical view name the `@ResponseBody` 
 is needed. This also takes care of automatic marshalling if a converter is available.
+On a GET-method it isn't mandatary when the class is annotated with `@RestController`.
 
 ### What does `@PathVariable` do?
 `@PathVariable` extracts a part of the `@RequestMapping` path as method argument for use in the implemented logic:
@@ -921,8 +1074,10 @@ Create, Read (Retrieve), Update, Delete (Destroy)
 REST is not a specific web service but a design concept (architecture) for managing state information. Therefore, REST by itself does not provide any form of security. To secure a REST service, several security protocols (such as OAuth 2.0 and TLS) are available. On an applicational level, Spring Security can be considered.
 
 ### Where do you need `@EnableWebMVC`?
+You use it on the config.
 
 ### Name some common http response codes. When do you need `@ResponseStatus`?
+When the method returns void. Because for example the body has no-content or when you dont want to return aan view-name.
 
 ### Does REST work with transport layer security (TLS)?
 Yes. Transport Layer Security can encrypt the communication to a RESTful Webservice and authenticate the server to a client.
@@ -982,6 +1137,41 @@ This allows users to immediately start with implementing business logic, because
 these dependencies.
 
 ### Spring Boot supports both Java properties and YML files. What do they look like and how do they work?
+It's recommended to use property files to define defaults, and override them using either: command line arguments, java system properties, and/or OS environment variables. Properties are accessed using `@Value` or use `@ConfigurationProperties` to create a dedicated container bean. Example:
+`@ConfigurationProperties(prefix="rewards.client")`
+You can override the name of the file with:
+```java
+public class Application {
+  public static void main(String[] args) {
+    // to use myserver.properties or myserver.yml
+    System.setProperty("spring.config.name", "myserver");
+    SpringApplication.run(Application.class, args);
+  }
+}
+```
+
+application.properties example:
+```
+database.host = localhost
+database.user = admin
+```
+
+Spring Boot looks for application.properties or application.yml in these locations (in this order):
+1. /config sub-dir
+2. working dir
+3. config package in classpath
+4. classpath root
+A PropertiesPropertySourceLoader or YamlPropertySourceLoader are used to load the files. Thereafter a PropertySource is created. 
+
+application.yml example:
+```
+database:
+  host: localhost
+  user: admin
+```
+
+YML: YAML Ain't Markup Language. A Java parser (SnakeYAML) is used to parse the file. It's provided by spring-boot-starters and must be on the classpath. Multiple profiles can be defined in one YML-file. They are seperated by three stripes: --- 
+It is convenient for hierarchical configuration data.
 
 ### Can you control logging with Spring Boot? How?
 The logging level can be set per package through property files.
@@ -996,14 +1186,14 @@ logging.level.com.mycompany.mypackage=INFO
 
 ### What is a microservices architecture?
 A microservice architecture is an architectural style that structures an application as a collection of loosely coupled 
-services, which implement business capabilities.
+services, which implement business capabilities. A microservice should deal with a single view of data (tight cohesion).
 
 ### What are the advantages and disadvantages of microservices?
 **Advantages:** 
 - Possibility to scale individual parts of the application
 - Reusability of services for multiple end goals
 - Microservices can be individually developed more easily
-- Possibility to use a different language and datastore for each service
+- Technology diversity: possibility to use a different language and datastore for each service
 - Individual parts of the application can have their own release cycle
 
 **Disadvantages:** 
