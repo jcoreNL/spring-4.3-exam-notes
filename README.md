@@ -697,9 +697,10 @@ The new transaction can either be embedded or the current transaction will be us
 | REQUIRED (default) | Create new transaction and use it | Join transaction |
 | REQUIRES_NEW | Create new transaction and use it | Halt previous transaction; create new transaction and use it; resume previous transaction |
 | NOT_SUPPORTED | Halt transaction; run outside transaction; resume transaction |
-| SUPPORTS | Do nothing special | Join transaction |
+| SUPPORTS | Execute non-transactionally | Join transaction |
 | MANDATORY | Join transaction | throw a `TransactionRequiredException` | 
-| NEVER | Do nothing special | Throw an exception |
+| NEVER | Execute non-transactionally | Throw an exception |
+| NESTED | Behave like PROPAGATION_REQUIRED | Execute within a nested transaction |
 
 
 ### What happens if one `@Transactional` annotated method is calling another `@Transactional` annotated method on the same object instance?
