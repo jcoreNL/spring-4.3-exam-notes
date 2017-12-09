@@ -90,7 +90,7 @@ The application-context (see last question) represents the Spring Inversion of C
     ```java
     @Configuration
     public class someConfig {
-        @Bean(destroyMethodName="preDestroyMethod")
+        @Bean(destroyMethod="preDestroyMethod")
         public SomeBean someBean() { return new SomeBean(); }
     }
     ```
