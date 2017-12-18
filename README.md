@@ -1037,8 +1037,8 @@ The @RequestMapping annotation is used for mapping web requests onto specific ha
 @PatchMapping  | @RequestMapping(method = RequestMethod.PATCH)
 
 ### Is `@Controller` a stereotype? Is `@RestController` a stereotype?
-`@Controller` is a stereotype, but `@RestController` is not, because the `@RestController` implicitly adds the 
-`@ResponseBody` annotation to all methods annotated with `@RequestMapping`, while stereotypes should not differ in behavior.
+`@Controller` and `@RestController` are both stereotypes. `@RestController` implicitly adds the 
+`@ResponseBody` annotation to all methods annotated with `@RequestMapping`.
 
 ### What is the difference between `@Controller` and `@RestController`?
 @RestController is a composed annotation of the @Controller meta-annotaion, which is visible in the source code of the @RestController:
