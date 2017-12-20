@@ -853,10 +853,25 @@ Navigating to `http://localhost:8080/example/123?someRequestParam=456` will set 
 ### What is a View and what's the idea behind supporting different types of View?
 
 ### How is the right View chosen when it comes to the rendering phase?
+The `DispatcherServlet` delegates to a `ViewResolver`, which resolve a view by name.
+Common `ViewResolver` implementations:
+
+| View resolver | Purpose |
+ --- | --- 
+| `InternalResourceViewResolver` | The default view resolver, maps a given view name to a resource path | 
+| `ResourceBundleViewResolver` | Maps a given view name to a view bean defined in *.properties files |
+| `XmlViewResolver` | Maps a given view name to a view bean defined in an XML file |
+
+A custom `ViewResolver` bean can be registered to override the default view resolving behaviour.
 
 ### What is the Model?
+The `Model` is a holder for model attributes. The attributes in the model are rendered in the `View`.
 
 ### Why do you have access to the model in your View? Where does it come from?
+The Model is passed on to the view by the `DispatcherServlet`:
+1) A `Model` is created by the `Controller` and passed to the `DispatcherServlet`,
+2) The `DispatcherServlet` uses the registered `ViewResolver` bean (by default the `InternalResourceViewResolver`) to determine the required view,
+3) The `DispatcherServlet` passes the model on to the view.
 
 ### What is the purpose of the session scope?
 
