@@ -3,6 +3,7 @@
 Remember: Unless a question explicitly references Spring Boot you can assume Spring Boot is not involved in any question.
 
 ## Index
+0. [Exam FAQ](#exam-faq-source)
 1. [Container, Dependency, and IOC](#container-dependency-and-ioc)
 2. [Aspect oriented programming](#aspect-oriented-programming)
 3. [Data Management: JDBC, Transactions, JPA, Spring Data](#data-management-jdbc-transactions-jpa-spring-data)
@@ -11,6 +12,41 @@ Remember: Unless a question explicitly references Spring Boot you can assume Spr
 6. [REST](#rest)
 7. [Spring Boot](#spring-boot)
 8. [Microservices](#microservices)
+
+## Exam FAQ ([source](https://pivotal.io/training/certification))
+1. Is there anything in the exam, which was not covered in the course?
+
+    No.
+
+2. Do I have to know class names and method signatures?
+
+    No. We think that this is why you are using an IDE - for us it's much more important that you've understood the concepts rather than learning API and method signatures.
+
+3. Do I have to write, complete or rearrange source code?
+
+    No. The only thing you should be able to do is read a snippet of code and understand what it's doing. For example, we might show you a class implementing a Spring callback and you will then see a couple of related questions. We do not ask you questions on things an IDE can do for you, like checking if the code will compile.
+
+4. Do I have to know any other APIs like AspectJ expression language in detail?
+
+    No. Of course you should be able to read, understand and use AspectJ expression language (po
+    intcut expressions) wherever it is necessary to configure Spring AOP – but this is not an exam about AspectJ.
+
+5. Are the advanced slides part of the exam?
+
+    No. Only the content presented before each chapter lab slide will be on the exam. Any course content presented after the chapter lab will not be in the exam. No content from the optional chapters will be on the exam.
+
+6. What are the topics of the exam?
+
+    - Container (40%)
+    - Aop (16%)
+    - Transactions (10%)
+    - MVC (6%)
+    - Security (6%)
+    - Microservices (6%)
+    - Jdbc (4%)
+    - REST (4%)
+    - Jpa Spring Data (4%)
+    - Boot (4%)
 
 ## Container, Dependency, and IOC
 
