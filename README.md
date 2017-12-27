@@ -744,9 +744,11 @@ By default the propagation type is `Propagation.REQUIRED`, which uses the curren
 The `Propagation.REQUIRES_NEW` embeds a new transaction by suspending the current transaction and starting a new one.
 
 ### Where can the `@Transactional` annotation be used? What is a typical usage if you put it at class level?
-The annotation can be used on both method and class level. At class level every method will be transactional. 
+The annotation can be used on both method and class level. At class level every method will be transactional. A typical usage of putting the `@Transactional` on class level is on a Repository level class in a layered architecture.
 
-A typical usage of putting the `@Transactional` on class level is on a Repository level class in a layered architecture.
+When using proxies, you should apply the @Transactional annotation only to methods with public visibility. If you do annotate protected, private or package-visible methods with the @Transactional annotation, no error is raised, but the annotated method does not exhibit the configured transactional settings.
+
+Spring recommends that you only use the @Transactional annotation on concrete classes/methods. Although @Transactional can be placed on interface classes/methods as well, the fact that __Java annotations are not inherited from interfaces__ means that they are only available through dynamic proxyies, and not through cglib proxies.
 
 ### What does declarative transaction management mean?
 Declarative transaction management is a model build on AOP. Spring has some transactional aspects that may be used to advice methods for them to work in a transactional manner. Declarative transaction management has the least impact on application code, and hence is most consistent with the ideals of a non-invasive lightweight container.
