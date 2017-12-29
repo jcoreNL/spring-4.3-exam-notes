@@ -679,6 +679,40 @@ Yes, transactions are implemented through AOP.
     - Using Annotations, XML, Programmatic
     - Can mix and match
 
+***Configuration in Java:***
+```java
+@Configuration
+@EnableTransactionManagement // Enable annotation-driven transaction management capability
+public class TransactionConfig {
+
+     @Bean
+     public DataSource dataSource() {
+         // Configure and return the necessary DataSource
+     }
+
+     @Bean
+     public PlatformTransactionManager txManager() {
+         return new DataSourceTransactionManager(dataSource());
+     }
+}
+```
+
+***Configuration in XML:***
+```xml
+<beans>
+    <tx:annotation-driven/>
+
+    <bean id="dataSource" class="com.vendor.VendorDataSource" />
+
+    <!-- enable the configuration of transactional behavior based on annotations -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <constructor-arg ref="dataSource"/>
+    </bean>
+</beans>
+```
+
 ### What does `@Transactional` do? 
 The `@Transactional` annotation marks a method (or all methods if placed on class level) to be run inside a transaction.
 
@@ -748,7 +782,7 @@ The annotation can be used on both method and class level. At class level every 
 
 When using proxies, you should apply the @Transactional annotation only to methods with public visibility. If you do annotate protected, private or package-visible methods with the @Transactional annotation, no error is raised, but the annotated method does not exhibit the configured transactional settings.
 
-Spring recommends that you only use the @Transactional annotation on concrete classes/methods. Although @Transactional can be placed on interface classes/methods as well, the fact that __Java annotations are not inherited from interfaces__ means that they are only available through dynamic proxyies, and not through cglib proxies.
+Spring recommends that you only use the @Transactional annotation on concrete classes/methods. Although @Transactional can be placed on interface classes/methods as well, the fact that __Java annotations are not inherited from interfaces__ means that the annotations on interfaces are only available through dynamic proxyies, and not through CGLIB proxies. Even worse; when the AOP config attribute `proxyTargetClass=true` is used to force the use of CGLIB proxyies, interface annotations will be ignored ([source](https://docs.spring.io/spring/docs/4.2.x/spring-framework-reference/html/transaction.html#transaction-declarative-annotations)).
 
 ### What does declarative transaction management mean?
 Declarative transaction management is a model build on AOP. Spring has some transactional aspects that may be used to advice methods for them to work in a transactional manner. Declarative transaction management has the least impact on application code, and hence is most consistent with the ideals of a non-invasive lightweight container.
