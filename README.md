@@ -807,15 +807,16 @@ ORM maps domain objects onto relational databases which allows the user to seemi
 objects in/from a relational database.
 
 ### What is a PersistenceContext and what is an EntityManager. What is the relationship between both?
-A `PersistenceContext` is a group of persistent objects in combination with a unit of work. This `PersistenceContext` is 
-managed by an `EntityManager`. An instance of `EntityManager` is often bound to a transaction.
+A `PersistenceContext` is a group of persistent objects in combination with a unit of work. This `PersistenceContext` is managed by an `EntityManager`. An instance of `EntityManager` is often bound to a transaction.
 
 ### Why do you need the `@Entity` annotation. Where can it be placed?
-The `@Entity` annotation marks a POJO as a relational entity which can be mapped and stored/retrieved. 
-It is placed on class level.
+The `@Entity` annotation marks a POJO as a relational entity which can be mapped and stored/retrieved. It can only be placed on class level.
 
 ### What do you need to do in Spring if you would like to work with JPA?
-- Define an EntityManagerFactory bean
+- Define an EntityManagerFactory bean, three options:
+  - LocalEntityManagerFactoryBean: For simple environments or integration tests, JPA only
+  - LocalContainerEntityManagerFactoryBean: Provides full JPA capabilities, for more customization
+  - Use a JNDI lookup
 - Define a DataSource
 - Define a Transaction Manager bean
 - Define Mapping Metadata
