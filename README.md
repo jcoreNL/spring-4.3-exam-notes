@@ -602,6 +602,46 @@ after-throwing
 
 ### What is the difference between `@EnableAspectJAutoProxy` and `<aop:aspectj-autoproxy>`?
 
+### How are Pointcut method patterns defined?
+Pointcuts are defined using a practical subset of AspectJ's pointcut expression language (http://www.eclipse.org/aspectj/docs.php). 
+
+pointcut method pattern:
+>[designator]([modifiers/annotations] [return type] [package].[class type].[method]\([params]\)) [throws ExceptionType]
+
+An Asterisk (\*) may be used anywhere to as a wildcard for a single part of the pointcut.  
+A set of two periods (..) may be used anywhere as a wildcard to replace 0 or more parts of the pointcut.  
+Parameters are defined using only their type (e.g.: String,int,long etc.).  
+Supported designators can be found in [the reference documentation](https://docs.spring.io/spring/docs/4.3.12.RELEASE/spring-framework-reference/html/aop.html#aop-pointcuts-designators).  
+Composite pointcuts are possible with `&&`, `||` and `!`:
+
+```java
+    @Pointcut("execution(public * *(..))")
+    private void anyPublicOperation() {}
+    
+    @Pointcut("within(com.xyz.someapp.trading..*)")
+    private void inTrading() {}
+    
+    @Pointcut("anyPublicOperation() && inTrading()")
+    private void tradingOperation() {}
+    }
+```
+
+### How do you qualify on a methods result with @AfterThrowing/@AfterReturning?
+Use the appropriate attribute on the annotation:
+
+```java
+    @AfterThrowing(value="execution(* *..Repository.*(..))", throwing="e")
+    public void report(JoinPoint jp, DataAccessException e) {
+        mailService.emailFailure("Exception in repository", jp, e);
+    }
+
+    @AfterReturning(value="execution(* service..*.*(..))", returning="reward")
+    public void audit(JoinPoint jp, Reward reward) {
+        auditService.logEvent(jp.getSignature() +
+        " returns the following reward object :" + reward.toString() );
+    }
+```
+
 ## Data Management: JDBC, Transactions, JPA, Spring Data
 
 ### What is the difference between checked and unchecked exceptions?
