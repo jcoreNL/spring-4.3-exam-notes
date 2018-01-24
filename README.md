@@ -606,7 +606,7 @@ after-throwing
 Pointcuts are defined using a practical subset of AspectJ's pointcut expression language (http://www.eclipse.org/aspectj/docs.php). 
 
 pointcut method pattern:
->[designator]([modifiers/annotations] [return type] [package].[class type].[method]\([params]\)) [throws ExceptionType]
+>\[designator\]\([modifiers/annotations] [return type] [package].[class type].[method]\([params]\)\) [throws ExceptionType]
 
 An Asterisk (\*) may be used anywhere to as a wildcard for a single part of the pointcut.  
 A set of two periods (..) may be used anywhere as a wildcard to replace 0 or more parts of the pointcut.  
