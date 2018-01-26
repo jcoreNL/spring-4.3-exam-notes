@@ -757,7 +757,16 @@ will have same result.
 Both  @EnableTransactionManagement and `<tx:annotation-driven/>` are responsible for registering the necessary Spring components that power annotation-driven transaction management. Both have the attribute transactionManager / transaction-manager="". The difference is that, if the attribute is not explicitly set, `<tx:annotation-driven/>` is hard-wired to look for a bean _named_ "transactionManager" by default, while the @EnableTransactionManagement is will fall back to a _by-type_ lookup for any PlatformTransactionManager bean in the container.
 
 ### How does the JdbcTemplate support generic queries? How does it return objects and lists/maps of objects?
-
+The `JdbcTemplate` is the central class in the JDBC core package. It simplifies the use of JDBC and helps to avoid common errors. It executes core JDBC workflow, leaving application code to provide SQL and extract results. This class executes SQL queries or updates, initiating iteration over ResultSets and catching JDBC exceptions and translating them to the generic, more informative exception hierarchy defined in the org.springframework.dao package. Its main use cases include:
+| Goal | Jdbc method | 
+| --- | --- | 
+| Return single row as a simple java object (ie. String.class) | `queryForObject` |
+| Return single row as a Map | `queryForMap` |
+| Return rows as a List of Maps | `queryForList` |
+| Return single row as a domain object | `query` + `RowMapper` |
+| Return rows as List of domain objects | `query` + `RowMapper` | 
+| Process rows without returning (ie. write to file) | `query` + `RowCallbackHandler` |
+| Process an entire resultset at once | `query` + `ResultSetExtractor` |
 ### What does transaction propagation mean?
 Transaction propagation is the way transactions act if another transaction has to be started during a transaction. 
 The new transaction can either be embedded or the current transaction will be used for this transaction. Spring supports several propagation types ([source](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Propagation.html)):
@@ -890,6 +899,7 @@ Spring 4.0 introduced `@RestController`, a specialized version of the controller
 To create a controller without the `@Controller` annotation (and thus without component-scanning); define it as a bean, let it implement the `Controller` interface and override the `handleRequest()` method.
 
 ### What is the ContextLoaderListener and what does it do?
+Bootstrap listener to start up and shut down Spring's root WebApplicationContext.
 
 ### What are you going to do in the web.xml. Where do you place it?
 
@@ -1317,6 +1327,31 @@ service. Eureka is a discovery service.
 the `eureka.client.serviceUrl.defaultZone` property which has to be set with the Eureka Server Url.
 
 ### How do you access a RESTful microservice?
-With the previous setup the `RestTemplate` is able to resolve the URI of a service based on their logical name set in the 
-`spring.application.name` property.  
-The `RestTemplate` can be annotated with `@LoadBalanced` to automatically use Ribbon for load balancing.
+With the previous setup the `RestTemplate` is able to resolve the URI of a service based on their logical name set in the `spring.application.name` property.  The `RestTemplate` can be annotated with `@LoadBalanced` to automatically use Ribbon for load balancing:
+
+Microservice A:
+```
+Application.properties: spring.application.name=name-of-microservice-a
+```
+
+Microservice B:
+```java
+// Configuration method:
+@Bean
+@LoadBalanced
+public RestTemplate restTemplate() {
+   return new RestTemplate(); 
+}
+
+...
+
+// Service class:
+@Autowired
+@LoadBalanced // Injection using same qualifier
+private RestTemplate restTemplate;
+
+public SomeClass getSomething(String id) {
+    // Microservice A name is used
+    return resttemplate.getForObject("http://name-of-microservice-a/{id}", SomeClass.class, id);
+}
+```
