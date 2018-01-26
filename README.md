@@ -155,7 +155,47 @@ public class AppConfig {
 }
 ```
 
-### How do you use dependency injection in XML, using constructor or setter injection
+### How do you use dependency injection in XML, using constructor or setter injection?
+```xml
+<beans ...>
+  <!-- Constructor injection by index -->
+  <bean class="package.someBean">
+    <constructor-arg index="0" value="blaat">
+    <constructor-arg index="1" ref="someBean">
+    <!-- Equivalent notation using c namespace -->
+    <c:_0="blaat">
+    <c:_1-ref="someBean">
+  </bean>
+  
+  <!-- Constructor injection by type -->
+  <bean class="package.someBean2">
+    <constructor type="int" value="123">
+    <!-- There is no c namespace equivalent for type -->
+  </bean>
+
+  <!-- Constructor injection by name -->
+  <bean class="package.someBean3">
+    <constructor name="someName" value="John">
+    <!-- Equivalent notation using c namespace -->
+    <c:someName="John">
+  </bean>
+
+  <!-- Property injection -->
+  <bean class="package.someBean">
+    <property name="someProperty" value="123">
+    <property name="someProperty2" ref="beanReference">
+    <property name="someList">
+      <list>
+        <value>val1</value>
+        <value>val2</value>
+      </list>
+    </property>
+    <!-- Equivalent notation using p namespace, no shortcut for someList -->
+    <p:someProperty="123">
+    <p:someProperty2-ref="beanReference">
+  </bean>
+</beans>
+```
 
 ### How do you use dependency injection using annotations (`@Component`,`@Autowired`)
 Classes annotated with `@Component` can be injected by using `@Autowired`. You can apply this annotation in multiple ways, see [more about autwired](#autowired) 
