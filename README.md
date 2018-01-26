@@ -850,6 +850,7 @@ Both  @EnableTransactionManagement and `<tx:annotation-driven/>` are responsible
 
 ### How does the JdbcTemplate support generic queries? How does it return objects and lists/maps of objects?
 The `JdbcTemplate` is the central class in the JDBC core package. It simplifies the use of JDBC and helps to avoid common errors. It executes core JDBC workflow, leaving application code to provide SQL and extract results. This class executes SQL queries or updates, initiating iteration over ResultSets and catching JDBC exceptions and translating them to the generic, more informative exception hierarchy defined in the org.springframework.dao package. Its main use cases include:
+
 | Goal | Jdbc method | 
 | --- | --- | 
 | Return single row as a simple java object (ie. String.class) | `queryForObject` |
@@ -859,6 +860,7 @@ The `JdbcTemplate` is the central class in the JDBC core package. It simplifies 
 | Return rows as List of domain objects | `query` + `RowMapper` | 
 | Process rows without returning (ie. write to file) | `query` + `RowCallbackHandler` |
 | Process an entire resultset at once | `query` + `ResultSetExtractor` |
+
 ### What does transaction propagation mean?
 Transaction propagation is the way transactions act if another transaction has to be started during a transaction. 
 The new transaction can either be embedded or the current transaction will be used for this transaction. Spring supports several propagation types ([source](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/annotation/Propagation.html)):
