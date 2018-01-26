@@ -949,8 +949,15 @@ Spring Data can automatically create an implementation of a user defined reposit
 Paging, custom queries and sorting are supported out-of-the-box.
 
 ### How do you define an “instant” repository?
-- Annotate comain class: define keys and enable persistence
-- Create an interface which extends from `Repository<T, K>`
+- Annotate domain class: define keys and enable persistence
+- Create an interface which extends from `Repository<T, K>`:
+
+```java
+public interface SomeClassRepository extends JpaRepository<SomeClass, Long>{
+   // Translates to query: SELECT s FROM SomeClass s WHERE firstname=?1 AND lastname=?2
+   List<SomeClass> findByFirstnameAndLastname( String firstName, String lastName );
+}
+```
 
 ### What is `@Query` used for?
 `@Query` is used to add custom query methods to an instant repository by specifying a query as annotation argument on a method in the interface:
@@ -1280,13 +1287,21 @@ REST is not a specific web service but a design concept (architecture) for manag
 You use it on the config.
 
 ### Name some common http response codes. When do you need `@ResponseStatus`?
-When the method returns void. Because for example the body has no-content or when you dont want to return aan view-name.
+When the method returns void. Because for example the body has no-content or when you dont want to return aan view-name. General subdivision of HTTP status codes:
+
+| Status code | Meaning |
+| --- | --- |
+| 1xx | Informational responses | 
+| 2xx | Success | 
+| 3xx | Redirection | 
+| 4xx | Error on client side | 
+| 5xx | Error on server side | 
 
 ### Does REST work with transport layer security (TLS)?
 Yes. Transport Layer Security can encrypt the communication to a RESTful Webservice and authenticate the server to a client.
 
 ### Do you need Spring MVC in your classpath?
-Yes. Spring MVC is the core component for REST support.
+Yes, in order to make use of Spring MVC, spring-webmvc will need to be on the classpath. Spring MVC is the core component for REST support. 
 
 ## Spring Boot
 
