@@ -869,7 +869,7 @@ The new transaction can either be embedded or the current transaction will be us
 | --- | --- | --- |
 | REQUIRED (default) | Create new transaction and use it | Join transaction |
 | REQUIRES_NEW | Create new transaction and use it | Halt previous transaction; create new transaction and use it; resume previous transaction |
-| NOT_SUPPORTED | Halt transaction; run outside transaction; resume transaction |
+| NOT_SUPPORTED | Execute non-transactionally | Halt transaction; run outside transaction; resume transaction |
 | SUPPORTS | Execute non-transactionally | Join transaction |
 | MANDATORY | Join transaction | throw a `TransactionRequiredException` | 
 | NEVER | Execute non-transactionally | Throw an exception |
