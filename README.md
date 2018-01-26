@@ -466,9 +466,21 @@ By sharing the same configuration.
 they cannot be proxied. This way the static method annotated with `@Bean` will generate a new instance of the bean on each 
 call which is not the expected singleton behavior.
 
-### What is a ProperySourcesPlaceholderConfigurer used for?
+### What is a PropertySourcesPlaceholderConfigurer used for?
+The `PropertySourcesPlaceholderConfigurer` resolves ${...} placeholders within bean definition property values and @Value annotations against the current Spring Environment and its set of PropertySources.
 
-### What is a namespace used for in XML configuration
+### What is a namespace used for in XML configuration?
+Namespaces allow hiding of actual bean definitions, reducing the size of bean configuration XML files and simplifying the configuration. For instance:
+
+```xml
+<!-- Without 'context' namespace -->
+<bean class="...PropertySourcesPlaceholderConfigurer">
+  <property name="location" value="some-config.properties">
+</bean>
+
+<!-- With 'context' namespace -->
+<context:property-placeholder="some-config.properties" />
+```
 
 ### What are the <context/> elements covered in the course and what do they do?
 - `<property-placeholder/>`
