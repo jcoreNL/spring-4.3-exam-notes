@@ -856,7 +856,7 @@ The `JdbcTemplate` is the central class in the JDBC core package. It simplifies 
 | Return single row as a simple java object (ie. String.class) | `queryForObject` |
 | Return single row as a Map | `queryForMap` |
 | Return rows as a List of Maps | `queryForList` |
-| Return single row as a domain object | `query` + `RowMapper` |
+| Return single row as a domain object | `queryForObject` + `RowMapper` |
 | Return rows as List of domain objects | `query` + `RowMapper` | 
 | Process rows without returning (ie. write to file) | `query` + `RowCallbackHandler` |
 | Process an entire resultset at once | `query` + `ResultSetExtractor` |
