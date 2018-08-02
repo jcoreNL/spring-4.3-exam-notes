@@ -1,5 +1,9 @@
 # Spring 4.3 Certification Exam Study Notes 
 
+Based on the https://github.com/vojtechruz/spring-core-cert-notes-4.2 repo of vojtechruz, which helped several JCorians get their Spring Core certification. Because it helped so much, the JCorians put together these notes to help future JCorians and others.
+
+## Note
+
 Remember: Unless a question explicitly references Spring Boot you can assume Spring Boot is not involved in any question.
 
 ## Index
